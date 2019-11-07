@@ -1,2 +1,1 @@
-# Machinic-Data-Common
-Shared libraries
+# Machinic Kafka
