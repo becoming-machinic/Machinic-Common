@@ -99,6 +99,7 @@ public class BloomFilterCollectionTest {
 						for (int i = 0; i < 512; i++) {
 								Assertions.assertTrue(bloomFilter.add(Integer.toString(i)));
 						}
+						Thread.sleep(1000);
 
 						Assertions.assertEquals(512, bloomFilter.count());
 

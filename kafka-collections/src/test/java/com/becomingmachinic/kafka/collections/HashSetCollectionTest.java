@@ -93,6 +93,7 @@ public class HashSetCollectionTest {
 						for (int i = 0; i < 512; i++) {
 								Assertions.assertTrue(set.add(Integer.toString(i)));
 						}
+						Thread.sleep(1000);
 
 						Assertions.assertEquals(512, set.size());
 
@@ -103,6 +104,7 @@ public class HashSetCollectionTest {
 						Assertions.assertEquals(set,set);
 						Assertions.assertEquals(set.hashCode(),set.hashCode());
 						set.clear();
+						Thread.sleep(1000);
 						Assertions.assertEquals(0,set.size());
 						Assertions.assertFalse(set.remove("non matching value"));
 						Assertions.assertFalse(set.remove(1));

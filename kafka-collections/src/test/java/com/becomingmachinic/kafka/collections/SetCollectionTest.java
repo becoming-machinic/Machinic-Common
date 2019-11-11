@@ -96,6 +96,7 @@ public class SetCollectionTest {
 						for (int i = 0; i < 512; i++) {
 								Assertions.assertTrue(set.add(Integer.toString(i)));
 						}
+						Thread.sleep(1000);
 
 						Assertions.assertEquals(512, set.size());
 

@@ -16,7 +16,9 @@ package com.becomingmachinic.kafka.collections;
 
 import org.apache.kafka.clients.consumer.ConsumerRecord;
 import org.apache.kafka.clients.producer.RecordMetadata;
+import org.apache.kafka.common.header.Header;
 
+import java.nio.ByteBuffer;
 import java.util.Arrays;
 import java.util.Objects;
 import java.util.concurrent.CountDownLatch;
@@ -29,26 +31,25 @@ class SendTask<K,V> implements Comparable<SendTask<K,V>> {
 
 		private final long id = counter.getAndIncrement();
 		private final CountDownLatch latch = new CountDownLatch(1);
+		private final ByteBuffer recordId;
 		private final K key;
 		private final V value;
-		private volatile RecordMetadata metadata;
 
-		public SendTask(K key,V value) {
+		public SendTask(long instanceId,K key,V value) {
+				this.recordId = ByteBuffer.allocate(16);
+				this.recordId.putLong(instanceId);
+				this.recordId.putLong(id);
+
 				this.key = key;
 				this.value = value;
 		}
 
 		public void onSendCompletion(RecordMetadata metadata, Exception e) {
-				this.metadata = metadata;
 		}
 
 		public boolean onReceive(ConsumerRecord<K, V> record) {
-				if (metadata != null) {
-						if (record.partition() == metadata.partition() && record.offset() >= metadata.offset()) {
-								this.latch.countDown();
-								return true;
-						}
-				} else if (isEqual(key, record.key()) && isEqual(value,record.value())) {
+				Header header = record.headers().lastHeader(CollectionConfig.COLLECTION_RECORD_HEADER_NAME);
+				if(header != null && header.value() != null && Arrays.equals(this.recordId.array(),header.value())){
 						this.latch.countDown();
 						return true;
 				}
@@ -73,6 +74,9 @@ class SendTask<K,V> implements Comparable<SendTask<K,V>> {
 				return -1;
 		}
 
+		public ByteBuffer getRecordId() {
+				return recordId;
+		}
 		private static boolean isEqual(Object a,Object b){
 			if(a != null && b != null && a instanceof byte[] && b instanceof byte[]){
 					return Arrays.equals((byte[])a,(byte[])b);

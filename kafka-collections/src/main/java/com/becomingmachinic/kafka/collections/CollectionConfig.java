@@ -53,8 +53,8 @@ public class CollectionConfig {
 		public static String COLLECTION_MAX_MESSAGE_BYTES = "collection.max.message.bytes";
 
 		/**
-		 * When strong consistency is required it is recommended to use {@value CollectionConfig#COLLECTION_WRITE_MODE} {@value CollectionConfig#COLLECTION_WRITE_MODE_AHEAD}
-		 * with {@value CollectionConfig#COLLECTION_SEND_MODE} {@value CollectionConfig#COLLECTION_SEND_MODE_SYNCHRONOUS}
+		 * When strong local consistency is required it is recommended to use {@value CollectionConfig#COLLECTION_WRITE_MODE} {@value CollectionConfig#COLLECTION_WRITE_MODE_BEHIND}.
+		 * When strong topic consistency is more important then local consistency it is recommended to use {@value CollectionConfig#COLLECTION_WRITE_MODE} {@value CollectionConfig#COLLECTION_WRITE_MODE_AHEAD}.
 		 */
 		public static String COLLECTION_WRITE_MODE = "collection.write.mode";
 		public static String COLLECTION_SKIP_CONNECTIVITY_CHECK = "collection.skip.connectivity.check";
@@ -76,11 +76,12 @@ public class CollectionConfig {
 		 */
 		public static String COLLECTION_SEND_MODE_ASYNCHRONOUS = "asynchronous";
 		/**
-		 * Sends data to Kafka topic before updating local collection.
+		 * Sends data to Kafka topic. The collection consumer will receive the update from the topic and update the local collection.
+		 * Values will be sent to the Kafka topic even if they are already present in the local instance.
 		 */
 		public static String COLLECTION_WRITE_MODE_AHEAD = "ahead";
 		/**
-		 * Sends data to Kafka topic after updating local collection
+		 * Updates local collection first, then sends update to kafka.
 		 */
 		public static String COLLECTION_WRITE_MODE_BEHIND = "behind";
 		/**
@@ -91,6 +92,8 @@ public class CollectionConfig {
 		 * Move the consumer offset to the end before consuming.
 		 */
 		public static String COLLECTION_RESET_OFFSET_END = "end";
+
+		public static String COLLECTION_RECORD_HEADER_NAME = "id";
 
 		protected Map<String, Object> configurationMap;
 

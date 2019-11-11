@@ -16,7 +16,10 @@ package com.becomingmachinic.kafka.collections;
 
 import org.apache.kafka.clients.consumer.ConsumerRecord;
 import org.apache.kafka.clients.consumer.ConsumerRecords;
+import org.apache.kafka.common.header.Header;
 
+import java.nio.ByteBuffer;
+import java.security.SecureRandom;
 import java.util.concurrent.ConcurrentSkipListSet;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.CountDownLatch;
@@ -25,20 +28,23 @@ import java.util.concurrent.TimeUnit;
 public abstract class AbstractKafkaCollection<K, V> implements AutoCloseable {
 
 		protected final CollectionConfig collectionConfig;
-		protected final CollectionProducer<K, V> producer;
-		protected final CollectionConsumer<K, V> consumer;
+		private final CollectionProducer<K, V> producer;
+		private final CollectionConsumer<K, V> consumer;
+		private final Long instanceId;
 
 		protected final String name;
 		protected final String sendMode;
 		protected final long sendTimeout;
-		protected final ConcurrentSkipListSet<SendTask<K,V>> sendTasks = new ConcurrentSkipListSet<>();
+		protected final String writeMode;
+		protected final ConcurrentSkipListSet<SendTask<K, V>> sendTasks = new ConcurrentSkipListSet<>();
 		protected final CopyOnWriteArrayList<KafkaCollectionEventListener<K, V>> listeners = new CopyOnWriteArrayList<>();
 
 		private volatile KafkaCollectionException exception = null;
 		private final CountDownLatch warmedLatch = new CountDownLatch(1);
 
-		protected AbstractKafkaCollection(CollectionConfig collectionConfig, CollectionProducer<K, V> producer,CollectionConsumer<K, V> consumer) {
+		protected AbstractKafkaCollection(CollectionConfig collectionConfig, CollectionProducer<K, V> producer, CollectionConsumer<K, V> consumer) {
 				this.collectionConfig = collectionConfig;
+				this.instanceId = generateInstanceId();
 
 				this.producer = producer;
 				this.consumer = consumer;
@@ -46,6 +52,7 @@ public abstract class AbstractKafkaCollection<K, V> implements AutoCloseable {
 				this.name = collectionConfig.getName();
 				this.sendMode = collectionConfig.getSendMode();
 				this.sendTimeout = collectionConfig.getSendTimeoutMs();
+				this.writeMode = collectionConfig.getWriteMode();
 				collectionConfig.logConfig();
 
 				checkConnectivity();
@@ -56,11 +63,11 @@ public abstract class AbstractKafkaCollection<K, V> implements AutoCloseable {
 		protected void sendKafkaEvent(K key, V value) {
 				if (CollectionConfig.COLLECTION_SEND_MODE_SYNCHRONOUS.equals(this.sendMode)) {
 						try {
-								SendTask<K,V> sendTask = new SendTask<>(key, value);
+								SendTask<K, V> sendTask = new SendTask<>(this.instanceId, key, value);
 								this.sendTasks.add(sendTask);
-								if(this.producer.send(sendTask)){
-										if(!sendTask.await(this.sendTimeout, TimeUnit.MILLISECONDS)){
-												throw new SendTimeoutException("Collection %s send message timeout %s expired on kafka key %s", this.name,Long.toString(this.sendTimeout), String.valueOf(key));
+								if (this.producer.send(sendTask)) {
+										if (!sendTask.await(this.sendTimeout, TimeUnit.MILLISECONDS)) {
+												throw new SendTimeoutException("Collection %s send message timeout %s expired on kafka key %s", this.name, Long.toString(this.sendTimeout), String.valueOf(key));
 										}
 								} else {
 										this.sendTasks.remove(sendTask);
@@ -100,13 +107,16 @@ public abstract class AbstractKafkaCollection<K, V> implements AutoCloseable {
 
 		protected void onKafkaEvents(ConsumerRecords<K, V> records) {
 				for (ConsumerRecord<K, V> record : records) {
+
+						Long recordInstanceId = this.getRecordInstanceId(record);
 						K key = record.key();
 						V value = record.value();
-						this.onKafkaEvent(key, record.value());
+						if (this.writeMode.equals(CollectionConfig.COLLECTION_WRITE_MODE_AHEAD) || !this.instanceId.equals(recordInstanceId)) {
+								this.onKafkaEvent(key, record.value());
+						}
 
-
-						for (SendTask<K,V> task : sendTasks) {
-								if(task.onReceive(record)){
+						for (SendTask<K, V> task : sendTasks) {
+								if (task.onReceive(record)) {
 										this.sendTasks.remove(task);
 								}
 						}
@@ -158,5 +168,23 @@ public abstract class AbstractKafkaCollection<K, V> implements AutoCloseable {
 						}
 				}
 				this.warmedLatch.countDown();
+		}
+
+		private static long generateInstanceId() {
+				ByteBuffer idBuffer = ByteBuffer.allocate(8);
+				idBuffer.putInt((int) (System.currentTimeMillis() - 1546300800000l));
+				idBuffer.putInt(new SecureRandom().nextInt());
+				return idBuffer.getLong(0);
+		}
+
+		private Long getRecordInstanceId(ConsumerRecord<K, V> record) {
+				Header header = record.headers().lastHeader(CollectionConfig.COLLECTION_RECORD_HEADER_NAME);
+				if (header != null) {
+						ByteBuffer buffer = ByteBuffer.wrap(header.value());
+						if (buffer.remaining() >= 8) {
+								return buffer.getLong();
+						}
+				}
+				return null;
 		}
 }

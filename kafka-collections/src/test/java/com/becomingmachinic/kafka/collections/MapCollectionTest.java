@@ -280,11 +280,14 @@ public class MapCollectionTest {
 						for (int i = 0; i < 512; i++) {
 								Assertions.assertNull(map.put(Integer.toString(i), String.format("Test_%s", i)));
 						}
+						Thread.sleep(1000);
+
 						Assertions.assertEquals(512, map.size());
 
 						for (int i = 0; i < 512; i++) {
 								Assertions.assertEquals(String.format("Test_%s", i), map.put(Integer.toString(i), null));
 						}
+						Thread.sleep(1000);
 
 						Assertions.assertEquals(0, map.size());
 				}

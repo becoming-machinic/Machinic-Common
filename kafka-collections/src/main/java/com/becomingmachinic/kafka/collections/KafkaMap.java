@@ -28,7 +28,7 @@ public class KafkaMap<K, V, KK, KV> extends AbstractKafkaCollection<KK, KV> impl
 		protected final CollectionSarde<KK, K> keySarde;
 		protected final CollectionSarde<KV, V> valueSarde;
 
-		protected final String writeMode;
+
 
 		public KafkaMap(CollectionConfig config, CollectionSarde<KK, K> keySarde, CollectionSarde<KV, V> valueSarde) {
 				this(new ConcurrentHashMap<K, V>(), config, keySarde, valueSarde);
@@ -42,8 +42,6 @@ public class KafkaMap<K, V, KK, KV> extends AbstractKafkaCollection<KK, KV> impl
 				this.delegateMap = delegateMap;
 				this.keySarde = keySarde;
 				this.valueSarde = valueSarde;
-				this.writeMode = collectionConfig.getWriteMode();
-
 				super.start();
 		}
 
@@ -56,9 +54,6 @@ public class KafkaMap<K, V, KK, KV> extends AbstractKafkaCollection<KK, KV> impl
 						} else if (CollectionConfig.COLLECTION_WRITE_MODE_AHEAD.equals(this.writeMode)) {
 								V oldValue = this.delegateMap.get(key);
 								super.sendKafkaEvent(this.keySarde.serialize(key), this.valueSarde.serialize(value));
-								if (!CollectionConfig.COLLECTION_SEND_MODE_SYNCHRONOUS.equals(this.sendMode)) {
-										this.delegateMap.put(key, value);
-								}
 								return oldValue;
 						} else {
 								throw new KafkaCollectionConfigurationException("The %s value %s is not supported by this collection", CollectionConfig.COLLECTION_WRITE_MODE, this.writeMode);
@@ -71,9 +66,6 @@ public class KafkaMap<K, V, KK, KV> extends AbstractKafkaCollection<KK, KV> impl
 						} else if (CollectionConfig.COLLECTION_WRITE_MODE_AHEAD.equals(this.writeMode)) {
 								V oldValue = this.delegateMap.get(key);
 								super.sendKafkaEvent(this.keySarde.serialize(key), null);
-								if (!CollectionConfig.COLLECTION_SEND_MODE_SYNCHRONOUS.equals(this.sendMode)) {
-										this.delegateMap.remove(key);
-								}
 								return oldValue;
 						} else {
 								throw new KafkaCollectionConfigurationException("The %s value %s is not supported by this collection", CollectionConfig.COLLECTION_WRITE_MODE, this.writeMode);

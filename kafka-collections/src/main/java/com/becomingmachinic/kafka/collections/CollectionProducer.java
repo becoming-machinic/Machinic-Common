@@ -16,6 +16,10 @@ package com.becomingmachinic.kafka.collections;
 
 import org.apache.kafka.clients.producer.KafkaProducer;
 import org.apache.kafka.clients.producer.ProducerRecord;
+import org.apache.kafka.common.header.Header;
+import org.apache.kafka.common.header.Headers;
+import org.apache.kafka.common.header.internals.RecordHeader;
+import org.apache.kafka.common.header.internals.RecordHeaders;
 import org.apache.kafka.common.serialization.Serializer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -51,7 +55,9 @@ class CollectionProducer<K, V> implements AutoCloseable {
 		public boolean send(SendTask<K, V> sendTask) throws KafkaCollectionException {
 				if (!this.stop && (sendTask.getKey() != null || sendTask.getValue() != null)) {
 						try {
-								this.producer.send(new ProducerRecord<K, V>(this.topic, sendTask.getKey(), sendTask.getValue()), sendTask::onSendCompletion);
+								Headers headers = new RecordHeaders();
+								headers.add(new RecordHeader(CollectionConfig.COLLECTION_RECORD_HEADER_NAME,sendTask.getRecordId().array()));
+								this.producer.send(new ProducerRecord<K, V>(this.topic,null, sendTask.getKey(), sendTask.getValue(),headers), sendTask::onSendCompletion);
 								return true;
 						} catch (Exception e) {
 								logger.info(String.format("Collection %s producer send message failed", this.name), e);

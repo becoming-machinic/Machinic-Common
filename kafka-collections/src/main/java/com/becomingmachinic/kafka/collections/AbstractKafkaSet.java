@@ -23,8 +23,6 @@ public abstract class AbstractKafkaSet<KK,K> extends AbstractKafkaCollection<KK,
 		protected final CollectionSarde<KK, K> keySarde;
 		protected final CollectionSarde<String, String> valueSarde;
 
-		protected final String writeMode;
-
 
 		public AbstractKafkaSet(CollectionConfig collectionConfig, CollectionSarde<KK, K> keySarde, CollectionSarde<String, String> valueSarde) {
 				super(collectionConfig,
@@ -33,7 +31,6 @@ public abstract class AbstractKafkaSet<KK,K> extends AbstractKafkaCollection<KK,
 
 				this.keySarde = keySarde;
 				this.valueSarde = valueSarde;
-				this.writeMode = collectionConfig.getWriteMode();
 		}
 
 		@Override
@@ -64,9 +61,6 @@ public abstract class AbstractKafkaSet<KK,K> extends AbstractKafkaCollection<KK,
 						} else if (CollectionConfig.COLLECTION_WRITE_MODE_AHEAD.equals(this.writeMode)) {
 								boolean contains = this.containsLocal(k);
 								super.sendKafkaEvent(this.keySarde.serialize(k), VALUE);
-								if (!CollectionConfig.COLLECTION_SEND_MODE_SYNCHRONOUS.equals(this.sendMode)) {
-										this.addLocal(k);
-								}
 								return !contains;
 						} else {
 								throw new KafkaCollectionConfigurationException("The %s value %s is not supported by this collection", CollectionConfig.COLLECTION_WRITE_MODE, this.writeMode);
@@ -86,9 +80,6 @@ public abstract class AbstractKafkaSet<KK,K> extends AbstractKafkaCollection<KK,
 						} else if (CollectionConfig.COLLECTION_WRITE_MODE_AHEAD.equals(this.writeMode)) {
 								boolean contains = this.containsLocal(k);
 								super.sendKafkaEvent(this.keySarde.serialize(k), null);
-								if (!CollectionConfig.COLLECTION_SEND_MODE_SYNCHRONOUS.equals(this.sendMode)) {
-										this.removeLocal(k);
-								}
 								return contains;
 						} else {
 								throw new KafkaCollectionConfigurationException("The %s value %s is not supported by this collection", CollectionConfig.COLLECTION_WRITE_MODE, this.writeMode);
