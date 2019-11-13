@@ -13,6 +13,7 @@ import org.testcontainers.containers.KafkaContainer;
 import java.time.Duration;
 import java.util.*;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicLong;
 
 import static org.junit.jupiter.api.parallel.ExecutionMode.CONCURRENT;
 
@@ -235,4 +236,44 @@ public class HashSetCollectionTest {
 		}
 
 
+		@Test
+		void hashSetCollectionAsynchronousWriteBehindDeduplicationTest() throws Exception {
+				configurationMap.put(CollectionConfig.COLLECTION_NAME, "hashSetCollectionAsynchronousWriteBehindDeduplicationTest");
+				configurationMap.put(CollectionConfig.COLLECTION_WRITE_MODE, CollectionConfig.COLLECTION_WRITE_MODE_BEHIND);
+				configurationMap.put(CollectionConfig.COLLECTION_SEND_MODE, CollectionConfig.COLLECTION_SEND_MODE_ASYNCHRONOUS);
+				configurationMap.put(ConsumerConfig.MAX_POLL_RECORDS_CONFIG, 1000);
+				int size = 50000;
+				int threadCount = 8;
+
+				try (KSet<String> set = new KafkaHashSet<String>(new CollectionConfig(configurationMap), HashingSerializer.stringSerializer(),new HashStreamProviderSHA256())) {
+						set.awaitWarmupComplete(30, TimeUnit.SECONDS);
+						Assertions.assertEquals(0, set.size());
+
+						AtomicLong addedItems = new AtomicLong(0);
+						long startTimestamp = System.currentTimeMillis();
+
+						List<Thread> threads = new ArrayList<>();
+						for (int i = 0; i < threadCount; i++) {
+								threads.add(new Thread(new Runnable() {
+										@Override
+										public void run() {
+												for (int i = 0; i < size; i++) {
+														if (set.add(Integer.toString(i))) {
+																addedItems.incrementAndGet();
+														}
+												}
+										}
+								}));
+						}
+						for (Thread thread : threads) {
+								thread.start();
+						}
+						for (Thread thread : threads) {
+								thread.join(60000);
+						}
+
+						System.out.println(String.format("Deduplicated %s items in %s milliseconds",threadCount * size,System.currentTimeMillis()-startTimestamp));
+						Assertions.assertEquals(size,set.size());
+				}
+		}
 }

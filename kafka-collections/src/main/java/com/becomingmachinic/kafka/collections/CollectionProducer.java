@@ -16,7 +16,6 @@ package com.becomingmachinic.kafka.collections;
 
 import org.apache.kafka.clients.producer.KafkaProducer;
 import org.apache.kafka.clients.producer.ProducerRecord;
-import org.apache.kafka.common.header.Header;
 import org.apache.kafka.common.header.Headers;
 import org.apache.kafka.common.header.internals.RecordHeader;
 import org.apache.kafka.common.header.internals.RecordHeaders;
@@ -24,6 +23,7 @@ import org.apache.kafka.common.serialization.Serializer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.nio.ByteBuffer;
 import java.util.concurrent.TimeUnit;
 
 class CollectionProducer<K, V> implements AutoCloseable {
@@ -56,7 +56,7 @@ class CollectionProducer<K, V> implements AutoCloseable {
 				if (!this.stop && (sendTask.getKey() != null || sendTask.getValue() != null)) {
 						try {
 								Headers headers = new RecordHeaders();
-								headers.add(new RecordHeader(CollectionConfig.COLLECTION_RECORD_HEADER_NAME,sendTask.getRecordId().array()));
+								headers.add(new RecordHeader(CollectionConfig.COLLECTION_RECORD_HEADER_NAME,sendTask.getRecordHeader().array()));
 								this.producer.send(new ProducerRecord<K, V>(this.topic,null, sendTask.getKey(), sendTask.getValue(),headers), sendTask::onSendCompletion);
 								return true;
 						} catch (Exception e) {
@@ -67,9 +67,11 @@ class CollectionProducer<K, V> implements AutoCloseable {
 				return false;
 		}
 
-		public void sendAsync(final K key, final V value) {
+		public void sendAsync(final long instanceId,final K key, final V value) {
 				if (!this.stop && (key != null || value != null)) {
-						this.producer.send(new ProducerRecord<>(this.topic, key, value));
+						Headers headers = new RecordHeaders();
+						headers.add(new RecordHeader(CollectionConfig.COLLECTION_RECORD_HEADER_NAME, ByteBuffer.allocate(8).putLong(instanceId).array()));
+						this.producer.send(new ProducerRecord<>(this.topic,null, key, value,headers));
 				}
 		}
 

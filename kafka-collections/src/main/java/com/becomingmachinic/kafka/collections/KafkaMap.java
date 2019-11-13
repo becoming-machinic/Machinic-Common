@@ -74,7 +74,10 @@ public class KafkaMap<K, V, KK, KV> extends AbstractKafkaCollection<KK, KV> impl
 		}
 
 		@Override
-		protected void onKafkaEvent(KK rawKey, KV rawValue) {
+		protected void onKafkaEvent(CollectionConsumerRecord<KK,KV> collectionRecord) {
+				KK rawKey = collectionRecord.key();
+				KV rawValue = collectionRecord.value();
+
 				if (rawKey != null) {
 						if (rawValue != null) {
 								this.delegateMap.put(this.keySarde.deserialize(rawKey), this.valueSarde.deserialize(rawValue));

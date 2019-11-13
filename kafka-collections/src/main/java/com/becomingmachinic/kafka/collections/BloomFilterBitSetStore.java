@@ -36,10 +36,15 @@ public class BloomFilterBitSetStore implements BloomFilterBitStore {
 		public boolean setHash(Hash hash, int hashCount) {
 				int[] vector = hash.getVector32();
 				boolean updated = false;
-				for (int i = 0; i < hashCount; i++) {
-						if (setBit(vector[i])) {
-								updated = true;
+				this.lock.writeLock().lock();
+				try {
+						for (int i = 0; i < hashCount; i++) {
+								if (setBit(vector[i])) {
+										updated = true;
+								}
 						}
+				} finally {
+						this.lock.writeLock().unlock();
 				}
 				return updated;
 		}

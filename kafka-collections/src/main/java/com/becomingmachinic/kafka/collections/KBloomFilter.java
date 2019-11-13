@@ -106,4 +106,9 @@ public interface KBloomFilter<T> extends AutoCloseable{
 		 */
 		public double getFalsePositiveProbability();
 
+		/**
+		 * Returns the expected false positive probability that was set when the Bloom Filter store was created.
+		 * @return
+		 */
+		public double getExpectedFalsePositiveProbability();
 }

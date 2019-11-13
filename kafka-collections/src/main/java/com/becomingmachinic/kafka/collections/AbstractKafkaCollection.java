@@ -76,7 +76,7 @@ public abstract class AbstractKafkaCollection<K, V> implements AutoCloseable {
 								throw new SendTimeoutException("Collection %s send message was interrupted", this.name);
 						}
 				} else if (CollectionConfig.COLLECTION_SEND_MODE_ASYNCHRONOUS.equals(this.sendMode)) {
-						this.producer.sendAsync(key, value);
+						this.producer.sendAsync(this.instanceId,key, value);
 				} else {
 						throw new KafkaCollectionConfigurationException("The %s value %s is not supported by this collection", CollectionConfig.COLLECTION_SEND_MODE, this.sendMode);
 				}
@@ -103,26 +103,24 @@ public abstract class AbstractKafkaCollection<K, V> implements AutoCloseable {
 				worker.start();
 		}
 
-		protected abstract void onKafkaEvent(K rawKey, V rawValue);
+		protected abstract void onKafkaEvent(CollectionConsumerRecord<K,V> collectionRecord);
 
 		protected void onKafkaEvents(ConsumerRecords<K, V> records) {
 				for (ConsumerRecord<K, V> record : records) {
+						CollectionConsumerRecord<K,V> collectionRecord = new CollectionConsumerRecord<>(record);
 
-						Long recordInstanceId = this.getRecordInstanceId(record);
-						K key = record.key();
-						V value = record.value();
-						if (this.writeMode.equals(CollectionConfig.COLLECTION_WRITE_MODE_AHEAD) || !this.instanceId.equals(recordInstanceId)) {
-								this.onKafkaEvent(key, record.value());
+						if (this.writeMode.equals(CollectionConfig.COLLECTION_WRITE_MODE_AHEAD) || !this.instanceId.equals(collectionRecord.getInstanceId())) {
+								this.onKafkaEvent(collectionRecord);
 						}
 
 						for (SendTask<K, V> task : sendTasks) {
-								if (task.onReceive(record)) {
+								if (task.onReceive(collectionRecord)) {
 										this.sendTasks.remove(task);
 								}
 						}
 
 						for (KafkaCollectionEventListener<K, V> listener : this.listeners) {
-								listener.onEvent(this, key, value);
+								listener.onEvent(this, collectionRecord);
 						}
 				}
 		}
@@ -137,6 +135,10 @@ public abstract class AbstractKafkaCollection<K, V> implements AutoCloseable {
 				for (KafkaCollectionEventListener listener : this.listeners) {
 						listener.onException(exception);
 				}
+		}
+
+		public long getInstanceId(){
+				return this.instanceId;
 		}
 
 		/**
@@ -166,6 +168,9 @@ public abstract class AbstractKafkaCollection<K, V> implements AutoCloseable {
 								this.producer.close();
 						} catch (Exception e) {
 						}
+				}
+				for (KafkaCollectionEventListener<K, V> listener : this.listeners) {
+						listener.onShutdown();
 				}
 				this.warmedLatch.countDown();
 		}

@@ -30,19 +30,23 @@ public class CountDownLatchKafkaCollectionEventListener<K,V> implements KafkaCol
 				this.releaseOnShutdown = releaseOnShutdown;
 		}
 
-		@Override public void onWarmupComplete(long warmupDuration) {
+		@Override
+		public void onWarmupComplete(long warmupDuration) {
 
 		}
-		@Override public void onEvent(AbstractKafkaCollection<K, V> kafkaCollection, K key, V value) {
+		@Override
+		public void onEvent(AbstractKafkaCollection<K, V> kafkaCollection, CollectionConsumerRecord<K, V> collectionRecord) {
 				this.latch.countDown();
 				if (this.latch.getCount() <= 0) {
 						kafkaCollection.removeKafkaCollectionEventListener(this);
 				}
 		}
-		@Override public void onException(KafkaCollectionException exception) {
+		@Override
+		public void onException(KafkaCollectionException exception) {
 
 		}
-		@Override public void onShutdown() {
+		@Override
+		public void onShutdown() {
 			if(this.releaseOnShutdown){
 					while(latch.getCount() > 0){
 							latch.countDown();

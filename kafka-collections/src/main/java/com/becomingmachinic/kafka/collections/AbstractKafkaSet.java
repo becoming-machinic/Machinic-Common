@@ -34,7 +34,10 @@ public abstract class AbstractKafkaSet<KK,K> extends AbstractKafkaCollection<KK,
 		}
 
 		@Override
-		protected void onKafkaEvent(KK rawKey, String rawValue) {
+		protected void onKafkaEvent(CollectionConsumerRecord<KK,String> collectionRecord) {
+				KK rawKey = collectionRecord.key();
+				String rawValue = collectionRecord.value();
+
 				if (rawKey != null) {
 						if (rawValue != null) {
 								this.addLocal(this.keySarde.deserialize(rawKey));

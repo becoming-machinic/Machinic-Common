@@ -31,14 +31,12 @@ class SendTask<K,V> implements Comparable<SendTask<K,V>> {
 
 		private final long id = counter.getAndIncrement();
 		private final CountDownLatch latch = new CountDownLatch(1);
-		private final ByteBuffer recordId;
+		private final Long instanceId;
 		private final K key;
 		private final V value;
 
 		public SendTask(long instanceId,K key,V value) {
-				this.recordId = ByteBuffer.allocate(16);
-				this.recordId.putLong(instanceId);
-				this.recordId.putLong(id);
+				this.instanceId = instanceId;
 
 				this.key = key;
 				this.value = value;
@@ -47,9 +45,8 @@ class SendTask<K,V> implements Comparable<SendTask<K,V>> {
 		public void onSendCompletion(RecordMetadata metadata, Exception e) {
 		}
 
-		public boolean onReceive(ConsumerRecord<K, V> record) {
-				Header header = record.headers().lastHeader(CollectionConfig.COLLECTION_RECORD_HEADER_NAME);
-				if(header != null && header.value() != null && Arrays.equals(this.recordId.array(),header.value())){
+		public boolean onReceive(CollectionConsumerRecord<K, V> record) {
+				if(this.instanceId.equals(record.getInstanceId()) && Objects.equals(this.id,record.getRecordId())){
 						this.latch.countDown();
 						return true;
 				}
@@ -74,8 +71,8 @@ class SendTask<K,V> implements Comparable<SendTask<K,V>> {
 				return -1;
 		}
 
-		public ByteBuffer getRecordId() {
-				return recordId;
+		public ByteBuffer getRecordHeader() {
+				return ByteBuffer.allocate(16).putLong(this.instanceId).putLong(id);
 		}
 		private static boolean isEqual(Object a,Object b){
 			if(a != null && b != null && a instanceof byte[] && b instanceof byte[]){

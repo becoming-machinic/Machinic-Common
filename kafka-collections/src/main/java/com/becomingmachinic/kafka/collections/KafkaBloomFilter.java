@@ -114,6 +114,11 @@ public class KafkaBloomFilter<K> extends AbstractKafkaHashSet<K> implements KBlo
 		}
 
 		@Override
+		public double getExpectedFalsePositiveProbability(){
+				return this.store.getExpectedFalsePositiveProbability();
+		}
+
+		@Override
 		public boolean equals(Object o) {
 				if (o != null) {
 						if (o instanceof KafkaBloomFilter) {

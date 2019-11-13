@@ -18,7 +18,7 @@ public interface KafkaCollectionEventListener<K,V> {
 
 		public void onWarmupComplete(long warmupDuration);
 
-		public void onEvent(AbstractKafkaCollection<K, V> kafkaCollection, K key, V value);
+		public void onEvent(AbstractKafkaCollection<K, V> kafkaCollection, CollectionConsumerRecord<K, V> collectionRecord);
 
 		public void onException(KafkaCollectionException exception);
 
