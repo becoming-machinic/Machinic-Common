@@ -11,8 +11,10 @@
     </parent>
 
     <artifactId>kafka-collections</artifactId>
-    <name>Kafka Collections</name>
     <packaging>jar</packaging>
+    <name>Kafka Collections</name>
+    <description>Kafka Collections provides a wrapper for several collection types that backs it with a Apache Kafka topic.</description>
+    <url>https://github.com/becoming-machinic/Machinic-Kafka/tree/master/kafka-collections</url>
 
     <properties>
         <maven.compiler.release>8</maven.compiler.release>

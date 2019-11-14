@@ -4,9 +4,16 @@
 	
 	<groupId>com.becomingmachinic.kafka</groupId>
 	<artifactId>machinic-kafka</artifactId>
-	<name>Machinic Kafka</name>
 	<version>0.0.1-SNAPSHOT</version>
 	<packaging>pom</packaging>
+	<name>Machinic Kafka</name>
+	<description>Machinic Kafka is a set of libraries that leverage kafka to do useful tasks</description>
+	<url>https://github.com/becoming-machinic/Machinic-Kafka</url>
+	<scm>
+		<url>https://github.com/becoming-machinic/Machinic-Kafka</url>
+		<connection>scm:git@github.com:becoming-machinic/Machinic-Kafka.git</connection>
+		<developerConnection>scm:git@github.com:becoming-machinic/Machinic-Kafka.git</developerConnection>
+	</scm>
 
 	<modules>
 		<module>kafka-collections</module>
