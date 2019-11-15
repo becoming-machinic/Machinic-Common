@@ -111,6 +111,34 @@ public class HashSerializerTest {
 		}
 
 		@Test
+		void stringMurmur3ProviderTest() throws Exception {
+				HashTester<String> tester = new HashTester<>(new HashStreamProviderMurmur3(0), HashingSerializer.stringSerializer());
+				HashTester<String> tester2 = new HashTester<>(new HashStreamProviderMurmur3(1), HashingSerializer.stringSerializer());
+
+				Assertions.assertEquals(Hash.wrap(new byte[] { -109, 45, 54, 88, 5, 106, -67, 39, -34, -86, 96, 82, 20, -47, 61, -65 }), tester.getHash("1"));
+				Assertions.assertArrayEquals(new int[] { 1825753512, 1477646407, 782232538, 1434641303 }, tester.getHash("1").getVector32());
+				Assertions.assertNotEquals(tester.getHash("1"), tester2.getHash("1"));
+				Assertions.assertEquals(4, tester.provider.getNumberOfHashFunctions());
+				Assertions.assertEquals(Hash.wrap(new byte[] { -41, 23, 64, 24, -1, 102, 102, -116, -29, 32, -84, 64, 89, -128, -122, -15 }), tester.getHash("Hello World"));
+				Assertions.assertArrayEquals(new int[] { 686342120, 312055052, 742857408, 1435868313 }, tester.getHash("Hello World").getVector32());
+				Assertions.assertNotEquals(tester.getHash("Hello World"), tester2.getHash("Hello World"));
+		}
+
+		@Test
+		void stringSipHashProviderTest() throws Exception {
+				HashTester<String> tester = new HashTester<>(new HashStreamProviderSipHash(1, 2), HashingSerializer.stringSerializer());
+				HashTester<String> tester2 = new HashTester<>(new HashStreamProviderSipHash(1, 3), HashingSerializer.stringSerializer());
+
+				Assertions.assertEquals(Hash.wrap(new byte[] { -113, 38, -106, 63, -71, -9, -41, -33 }), tester.getHash("1"));
+				Assertions.assertArrayEquals(new int[] { 1893296577, 2063391743 }, tester.getHash("1").getVector32());
+				Assertions.assertNotEquals(tester.getHash("1"), tester2.getHash("1"));
+				Assertions.assertEquals(2, tester.provider.getNumberOfHashFunctions());
+				Assertions.assertEquals(Hash.wrap(new byte[] { 26, -124, 17, 89, 5, 53, 99, 126 }), tester.getHash("Hello World"));
+				Assertions.assertArrayEquals(new int[] { 444862809, 1586033598 }, tester.getHash("Hello World").getVector32());
+				Assertions.assertNotEquals(tester.getHash("Hello World"), tester2.getHash("Hello World"));
+		}
+
+		@Test
 		void integerSerializerTest() {
 				HashTester<Integer> tester = new HashTester<>(new HashStreamProviderCRC32(), new HashingIntegerSerializer());
 

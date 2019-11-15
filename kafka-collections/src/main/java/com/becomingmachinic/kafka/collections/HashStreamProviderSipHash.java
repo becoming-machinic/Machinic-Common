@@ -15,28 +15,31 @@
 package com.becomingmachinic.kafka.collections;
 
 /**
- * The HMAC SHA512 hash stream hashes the data using the SHA512 HMAC (Keyed hash) to make it impossible for an attacker to predict a
- * resulting and therefore exploit a collision in the bloom filter. For this to be true the hashKey must remain unknown to the attacker.
- * A HMAC SHA512 has is more computationally expensive than a standard SHA512 hash so if this added security is not needed then the standard
- * SHA512 provider should be used.
+ * A SipHash has is less computationally expensive than an HmacSHA256 hash but also has the advantage of being keyed.
  *
  * @author caleb
  */
-public class HashStreamProviderHmacSHA512 implements HashStreamProvider {
+public class HashStreamProviderSipHash implements HashStreamProvider {
 
-		private final byte[] hashKey;
+		private final long k0;
+		private final long k1;
 
-		public HashStreamProviderHmacSHA512(byte[] hashKey) {
-				this.hashKey = hashKey;
+		public HashStreamProviderSipHash() {
+				this(0, 0);
+		}
+
+		public HashStreamProviderSipHash(long k0, long k1) {
+				this.k0 = k0;
+				this.k1 = k1;
 		}
 
 		@Override
 		public HashStream createHashStream() throws HashStreamException {
-				return new HashStreamHmacSHA512(this.hashKey);
+				return new HashStreamSipHash(this.k0, this.k1);
 		}
 
 		@Override
 		public int getNumberOfHashFunctions() {
-				return 16;
+				return 2;
 		}
 }

@@ -15,28 +15,30 @@
 package com.becomingmachinic.kafka.collections;
 
 /**
- * The HMAC SHA512 hash stream hashes the data using the SHA512 HMAC (Keyed hash) to make it impossible for an attacker to predict a
- * resulting and therefore exploit a collision in the bloom filter. For this to be true the hashKey must remain unknown to the attacker.
- * A HMAC SHA512 has is more computationally expensive than a standard SHA512 hash so if this added security is not needed then the standard
- * SHA512 provider should be used.
+ * A Murmur3 has is less computationally expensive than a standard SHA256 hash.
+ * It is also not a cryptographic hash function, so it should not be used where an attacker can gain benefit by predicting hash collisions
  *
  * @author caleb
  */
-public class HashStreamProviderHmacSHA512 implements HashStreamProvider {
+public class HashStreamProviderMurmur3 implements HashStreamProvider {
 
-		private final byte[] hashKey;
+		private final int seed;
 
-		public HashStreamProviderHmacSHA512(byte[] hashKey) {
-				this.hashKey = hashKey;
+		public HashStreamProviderMurmur3() {
+				this(0);
+		}
+
+		public HashStreamProviderMurmur3(int seed) {
+				this.seed = seed;
 		}
 
 		@Override
 		public HashStream createHashStream() throws HashStreamException {
-				return new HashStreamHmacSHA512(this.hashKey);
+				return new HashStreamMurmur3(this.seed);
 		}
 
 		@Override
 		public int getNumberOfHashFunctions() {
-				return 16;
+				return 4;
 		}
 }
