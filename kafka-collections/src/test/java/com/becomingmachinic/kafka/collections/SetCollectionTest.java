@@ -57,7 +57,7 @@ public class SetCollectionTest {
 				configurationMap.put(CollectionConfig.COLLECTION_WRITE_MODE, CollectionConfig.COLLECTION_WRITE_MODE_AHEAD);
 				configurationMap.put(CollectionConfig.COLLECTION_SEND_MODE, CollectionConfig.COLLECTION_SEND_MODE_SYNCHRONOUS);
 
-				try (KSet<String> set = new KafkaSet<String, String>(new CollectionConfig(configurationMap), CollectionSarde.stringToString())) {
+				try (KSet<String> set = new KafkaSet<String, String>(new CollectionConfig(configurationMap), CollectionSerde.stringToString())) {
 						set.awaitWarmupComplete(30, TimeUnit.SECONDS);
 						Assertions.assertEquals(0, set.size());
 
@@ -89,7 +89,7 @@ public class SetCollectionTest {
 				configurationMap.put(CollectionConfig.COLLECTION_WRITE_MODE, CollectionConfig.COLLECTION_WRITE_MODE_AHEAD);
 				configurationMap.put(CollectionConfig.COLLECTION_SEND_MODE, CollectionConfig.COLLECTION_SEND_MODE_ASYNCHRONOUS);
 
-				try (KSet<String> set = new KafkaSet<String, String>(new CollectionConfig(configurationMap), CollectionSarde.stringToString())) {
+				try (KSet<String> set = new KafkaSet<String, String>(new CollectionConfig(configurationMap), CollectionSerde.stringToString())) {
 						set.awaitWarmupComplete(30, TimeUnit.SECONDS);
 						Assertions.assertEquals(0, set.size());
 
@@ -121,7 +121,7 @@ public class SetCollectionTest {
 				configurationMap.put(CollectionConfig.COLLECTION_WRITE_MODE, CollectionConfig.COLLECTION_WRITE_MODE_BEHIND);
 				configurationMap.put(CollectionConfig.COLLECTION_SEND_MODE, CollectionConfig.COLLECTION_SEND_MODE_SYNCHRONOUS);
 
-				try (KSet<String> set = new KafkaSet<String, String>(new CollectionConfig(configurationMap), CollectionSarde.stringToString())) {
+				try (KSet<String> set = new KafkaSet<String, String>(new CollectionConfig(configurationMap), CollectionSerde.stringToString())) {
 						set.awaitWarmupComplete(30, TimeUnit.SECONDS);
 						Assertions.assertEquals(0, set.size());
 
@@ -151,7 +151,7 @@ public class SetCollectionTest {
 				configurationMap.put(CollectionConfig.COLLECTION_WRITE_MODE, CollectionConfig.COLLECTION_WRITE_MODE_BEHIND);
 				configurationMap.put(CollectionConfig.COLLECTION_SEND_MODE, CollectionConfig.COLLECTION_SEND_MODE_ASYNCHRONOUS);
 
-				try (KSet<String> set = new KafkaSet<String, String>(new CollectionConfig(configurationMap), CollectionSarde.stringToString())) {
+				try (KSet<String> set = new KafkaSet<String, String>(new CollectionConfig(configurationMap), CollectionSerde.stringToString())) {
 						set.awaitWarmupComplete(30, TimeUnit.SECONDS);
 						Assertions.assertEquals(0, set.size());
 
@@ -188,7 +188,7 @@ public class SetCollectionTest {
 				DB db = DBMaker.memoryDB().make();
 				Set<String> hTreeSet = db.hashSet("hTreeSet",Serializer.STRING).create();
 
-				try (KSet<String>set = new KafkaSet<String, String>(hTreeSet, new CollectionConfig(configurationMap), CollectionSarde.stringToString())) {
+				try (KSet<String>set = new KafkaSet<String, String>(hTreeSet, new CollectionConfig(configurationMap), CollectionSerde.stringToString())) {
 						set.awaitWarmupComplete(30, TimeUnit.SECONDS);
 						Assertions.assertEquals(0, set.size());
 
@@ -218,7 +218,7 @@ public class SetCollectionTest {
 				configurationMap.put(CollectionConfig.COLLECTION_WRITE_MODE, CollectionConfig.COLLECTION_WRITE_MODE_BEHIND);
 				configurationMap.put(CollectionConfig.COLLECTION_SEND_MODE, CollectionConfig.COLLECTION_SEND_MODE_ASYNCHRONOUS);
 
-				try (KSet<String> set = new KafkaSet<String, String>(new CollectionConfig(configurationMap), CollectionSarde.stringToString())) {
+				try (KSet<String> set = new KafkaSet<String, String>(new CollectionConfig(configurationMap), CollectionSerde.stringToString())) {
 						set.awaitWarmupComplete(30, TimeUnit.SECONDS);
 						Assertions.assertEquals(0, set.size());
 

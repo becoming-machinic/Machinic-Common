@@ -18,11 +18,14 @@ import org.apache.kafka.common.serialization.Deserializer;
 import org.apache.kafka.common.serialization.Serializer;
 
 /**
- * A CollectionSarde provides the ability to convert the collection object type to a primitive kafka type.
- * @param <S> Raw Kafka type
- * @param <T> Collection object type
+ * A CollectionSerde provides the ability to convert the collection object type to a primitive Kafka type.
+ * 
+ * @param <S>
+ *          Raw Kafka type
+ * @param <T>
+ *          Collection object type
  */
-public interface CollectionSarde<S,T> {
+public interface CollectionSerde<S,T> {
 
     /**
      * Convert an instance of the collection type to the raw kafka type
@@ -50,13 +53,13 @@ public interface CollectionSarde<S,T> {
      */
     public Deserializer<S> getRawDeserializer();
 
-    public static CollectionStringSarde<String> stringToString(){
+    public static CollectionStringSerde<String> stringToString(){
         return new StringToStringCollectionSarde();
     }
-    public static CollectionByteArraySarde<byte[]> byteArrayToByteArray(){
-        return new ByteArrayToByteArrayCollectionSarde();
+    public static CollectionByteArraySerde<byte[]> byteArrayToByteArray(){
+        return new ByteArrayToByteArrayCollectionSerde();
     }
-    public static CollectionByteArraySarde<Hash> byteArrayToHash(){
-        return new ByteArrayToHashCollectionSarde();
+    public static CollectionByteArraySerde<Hash> byteArrayToHash(){
+        return new ByteArrayToHashCollectionSerde();
     }
 }

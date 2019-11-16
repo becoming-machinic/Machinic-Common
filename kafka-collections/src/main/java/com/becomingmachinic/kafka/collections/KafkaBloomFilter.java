@@ -30,11 +30,11 @@ public class KafkaBloomFilter<K> extends AbstractKafkaHashSet<K> implements KBlo
 		protected final int numberOfHashFunctionsK;
 
 		public KafkaBloomFilter(BloomFilterBitStore store, CollectionConfig collectionConfig, HashingSerializer<K> hashingSerializer, HashStreamProvider hashStreamProvider) {
-				this(store, collectionConfig, hashingSerializer, hashStreamProvider, CollectionSarde.byteArrayToHash(), CollectionSarde.stringToString());
+				this(store, collectionConfig, hashingSerializer, hashStreamProvider, CollectionSerde.byteArrayToHash(), CollectionSerde.stringToString());
 		}
 
-		public KafkaBloomFilter(BloomFilterBitStore store, CollectionConfig collectionConfig, HashingSerializer<K> hashingSerializer, HashStreamProvider hashStreamProvider, CollectionSarde<byte[], Hash> keySarde, CollectionSarde<String, String> valueSarde) {
-				super(collectionConfig, hashingSerializer, hashStreamProvider, keySarde, valueSarde);
+		public KafkaBloomFilter(BloomFilterBitStore store, CollectionConfig collectionConfig, HashingSerializer<K> hashingSerializer, HashStreamProvider hashStreamProvider, CollectionSerde<byte[], Hash> keySerde, CollectionSerde<String, String> valueSerde) {
+				super(collectionConfig, hashingSerializer, hashStreamProvider, keySerde, valueSerde);
 				this.store = store;
 				this.numberOfHashFunctionsK = Math.min(KBloomFilter.optimalNumberOfHashFunctionsK(this.store.getExpectedNumberOfItemsN(), this.store.size()), hashStreamProvider.getNumberOfHashFunctions());
 				logger.debug("KafkaBloomFilter {} will use {} hash functions out of the avalible {} hash functions provided by the HashStreamProvider",collectionConfig.getName(),this.numberOfHashFunctionsK,hashStreamProvider.getNumberOfHashFunctions());

@@ -14,7 +14,7 @@
 
 package com.becomingmachinic.kafka.collections;
 
-public class ByteArrayToByteArrayCollectionSarde implements CollectionByteArraySarde<byte[]> {
+public class ByteArrayToByteArrayCollectionSerde implements CollectionByteArraySerde<byte[]> {
 
 		@Override public byte[] serialize(byte[] value) throws SerializationException {
 				return value;

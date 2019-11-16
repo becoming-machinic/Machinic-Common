@@ -19,7 +19,7 @@ import org.apache.kafka.common.serialization.Serializer;
 import org.apache.kafka.common.serialization.StringDeserializer;
 import org.apache.kafka.common.serialization.StringSerializer;
 
-public interface CollectionStringSarde<V> extends CollectionSarde<String,V> {
+public interface CollectionStringSerde<V> extends CollectionSerde<String,V> {
 
     @Override
     public String serialize(V value) throws SerializationException;

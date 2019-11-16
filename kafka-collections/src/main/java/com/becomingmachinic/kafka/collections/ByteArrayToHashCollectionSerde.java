@@ -14,9 +14,7 @@
 
 package com.becomingmachinic.kafka.collections;
 
-import java.nio.ByteBuffer;
-
-public class ByteArrayToHashCollectionSarde implements CollectionByteArraySarde<Hash> {
+public class ByteArrayToHashCollectionSerde implements CollectionByteArraySerde<Hash> {
 
 		@Override
 		public byte[] serialize(Hash value) throws SerializationException {

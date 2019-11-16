@@ -25,23 +25,23 @@ import java.util.concurrent.ConcurrentMap;
 public class KafkaMap<K, V, KK, KV> extends AbstractKafkaCollection<KK, KV> implements KMap<K, V> {
 
 		protected final ConcurrentMap<K, V> delegateMap;
-		protected final CollectionSarde<KK, K> keySarde;
-		protected final CollectionSarde<KV, V> valueSarde;
+		protected final CollectionSerde<KK, K> keySerde;
+		protected final CollectionSerde<KV, V> valueSerde;
 
 
 
-		public KafkaMap(CollectionConfig config, CollectionSarde<KK, K> keySarde, CollectionSarde<KV, V> valueSarde) {
-				this(new ConcurrentHashMap<K, V>(), config, keySarde, valueSarde);
+		public KafkaMap(CollectionConfig config, CollectionSerde<KK, K> keySerde, CollectionSerde<KV, V> valueSerde) {
+				this(new ConcurrentHashMap<K, V>(), config, keySerde, valueSerde);
 		}
 
-		public KafkaMap(ConcurrentMap<K, V> delegateMap, CollectionConfig collectionConfig, CollectionSarde<KK, K> keySarde, CollectionSarde<KV, V> valueSarde) {
+		public KafkaMap(ConcurrentMap<K, V> delegateMap, CollectionConfig collectionConfig, CollectionSerde<KK, K> keySerde, CollectionSerde<KV, V> valueSerde) {
 				super(collectionConfig,
-						new CollectionProducer<KK, KV>(collectionConfig, keySarde.getRawSerializer(), valueSarde.getRawSerializer()),
-						new CollectionConsumer<KK, KV>(collectionConfig, keySarde.getRawDeserializer(), valueSarde.getRawDeserializer()));
+						new CollectionProducer<KK, KV>(collectionConfig, keySerde.getRawSerializer(), valueSerde.getRawSerializer()),
+						new CollectionConsumer<KK, KV>(collectionConfig, keySerde.getRawDeserializer(), valueSerde.getRawDeserializer()));
 
 				this.delegateMap = delegateMap;
-				this.keySarde = keySarde;
-				this.valueSarde = valueSarde;
+				this.keySerde = keySerde;
+				this.valueSerde = valueSerde;
 				super.start();
 		}
 
@@ -49,11 +49,11 @@ public class KafkaMap<K, V, KK, KV> extends AbstractKafkaCollection<KK, KV> impl
 				if (value != null) {
 						if (CollectionConfig.COLLECTION_WRITE_MODE_BEHIND.equals(this.writeMode)) {
 								V oldValue = this.delegateMap.put(key, value);
-								super.sendKafkaEvent(this.keySarde.serialize(key), this.valueSarde.serialize(value));
+								super.sendKafkaEvent(this.keySerde.serialize(key), this.valueSerde.serialize(value));
 								return oldValue;
 						} else if (CollectionConfig.COLLECTION_WRITE_MODE_AHEAD.equals(this.writeMode)) {
 								V oldValue = this.delegateMap.get(key);
-								super.sendKafkaEvent(this.keySarde.serialize(key), this.valueSarde.serialize(value));
+								super.sendKafkaEvent(this.keySerde.serialize(key), this.valueSerde.serialize(value));
 								return oldValue;
 						} else {
 								throw new KafkaCollectionConfigurationException("The %s value %s is not supported by this collection", CollectionConfig.COLLECTION_WRITE_MODE, this.writeMode);
@@ -61,11 +61,11 @@ public class KafkaMap<K, V, KK, KV> extends AbstractKafkaCollection<KK, KV> impl
 				} else {
 						if (CollectionConfig.COLLECTION_WRITE_MODE_BEHIND.equals(this.writeMode)) {
 								V oldValue = this.delegateMap.remove(key);
-								super.sendKafkaEvent(this.keySarde.serialize(key), null);
+								super.sendKafkaEvent(this.keySerde.serialize(key), null);
 								return oldValue;
 						} else if (CollectionConfig.COLLECTION_WRITE_MODE_AHEAD.equals(this.writeMode)) {
 								V oldValue = this.delegateMap.get(key);
-								super.sendKafkaEvent(this.keySarde.serialize(key), null);
+								super.sendKafkaEvent(this.keySerde.serialize(key), null);
 								return oldValue;
 						} else {
 								throw new KafkaCollectionConfigurationException("The %s value %s is not supported by this collection", CollectionConfig.COLLECTION_WRITE_MODE, this.writeMode);
@@ -80,10 +80,10 @@ public class KafkaMap<K, V, KK, KV> extends AbstractKafkaCollection<KK, KV> impl
 
 				if (rawKey != null) {
 						if (rawValue != null) {
-								this.delegateMap.put(this.keySarde.deserialize(rawKey), this.valueSarde.deserialize(rawValue));
+								this.delegateMap.put(this.keySerde.deserialize(rawKey), this.valueSerde.deserialize(rawValue));
 								//TODO update metrics
 						} else {
-								this.delegateMap.remove(this.keySarde.deserialize(rawKey));
+								this.delegateMap.remove(this.keySerde.deserialize(rawKey));
 								//TODO update metrics
 						}
 				}

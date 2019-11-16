@@ -15,23 +15,20 @@
 
 package com.becomingmachinic.kafka.collections;
 
-import java.util.*;
-import java.util.concurrent.ConcurrentHashMap;
-
 public abstract class AbstractKafkaHashSet<K> extends AbstractKafkaSet<byte[],Hash> {
 
 		protected static final String VALUE = "1";
 
-		protected final CollectionSarde<byte[], Hash> keySarde;
-		protected final CollectionSarde<String, String> valueSarde;
+		protected final CollectionSerde<byte[], Hash> keySerde;
+		protected final CollectionSerde<String, String> valueSerde;
 		protected final HashingSerializer<K> hashingSerializer;
 		protected final HashStreamProvider hashStreamProvider;
 
-		public AbstractKafkaHashSet(CollectionConfig collectionConfig, HashingSerializer<K> hashingSerializer, HashStreamProvider hashStreamProvider, CollectionSarde<byte[], Hash> keySarde, CollectionSarde<String, String> valueSarde) {
-				super(collectionConfig,keySarde,valueSarde);
+		public AbstractKafkaHashSet(CollectionConfig collectionConfig, HashingSerializer<K> hashingSerializer, HashStreamProvider hashStreamProvider, CollectionSerde<byte[], Hash> keySerde, CollectionSerde<String, String> valueSerde) {
+				super(collectionConfig,keySerde,valueSerde);
 
-				this.keySarde = keySarde;
-				this.valueSarde = valueSarde;
+				this.keySerde = keySerde;
+				this.valueSerde = valueSerde;
 				this.hashingSerializer = hashingSerializer;
 				this.hashStreamProvider = hashStreamProvider;
 		}

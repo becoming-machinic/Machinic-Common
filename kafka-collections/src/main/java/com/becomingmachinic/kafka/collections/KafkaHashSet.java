@@ -26,11 +26,11 @@ public class KafkaHashSet<K> extends AbstractKafkaHashSet<K> implements KSet<K> 
 		}
 
 		public KafkaHashSet(Set<Hash> delegateSet, CollectionConfig collectionConfig, HashingSerializer<K> hashingSerializer, HashStreamProvider hashStreamProvider) {
-				this(delegateSet, collectionConfig, hashingSerializer, hashStreamProvider, CollectionSarde.byteArrayToHash(), CollectionSarde.stringToString());
+				this(delegateSet, collectionConfig, hashingSerializer, hashStreamProvider, CollectionSerde.byteArrayToHash(), CollectionSerde.stringToString());
 		}
 
-		public KafkaHashSet(Set<Hash> delegateSet, CollectionConfig collectionConfig, HashingSerializer<K> hashingSerializer, HashStreamProvider hashStreamProvider, CollectionSarde<byte[], Hash> keySarde, CollectionSarde<String, String> valueSarde) {
-				super(collectionConfig, hashingSerializer, hashStreamProvider, keySarde, valueSarde);
+		public KafkaHashSet(Set<Hash> delegateSet, CollectionConfig collectionConfig, HashingSerializer<K> hashingSerializer, HashStreamProvider hashStreamProvider, CollectionSerde<byte[], Hash> keySerde, CollectionSerde<String, String> valueSerde) {
+				super(collectionConfig, hashingSerializer, hashStreamProvider, keySerde, valueSerde);
 				this.delegateSet = delegateSet;
 
 				super.start();

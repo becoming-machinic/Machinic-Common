@@ -27,15 +27,15 @@ public class KafkaSet<KK,K> extends AbstractKafkaSet<KK, K> implements KSet<K> {
 
 		protected final Set<K> delegateSet;
 
-		public KafkaSet(CollectionConfig config, CollectionSarde<KK, K> keySarde) {
+		public KafkaSet(CollectionConfig config, CollectionSerde<KK, K> keySarde) {
 				this(Collections.newSetFromMap(new ConcurrentHashMap<>()), config, keySarde);
 		}
 
-		public KafkaSet(Set<K> delegateSet, CollectionConfig collectionConfig, CollectionSarde<KK, K> keySarde) {
-				this(delegateSet, collectionConfig, keySarde, CollectionSarde.stringToString());
+		public KafkaSet(Set<K> delegateSet, CollectionConfig collectionConfig, CollectionSerde<KK, K> keySarde) {
+				this(delegateSet, collectionConfig, keySarde, CollectionSerde.stringToString());
 		}
 
-		public KafkaSet(Set<K> delegateSet, CollectionConfig collectionConfig, CollectionSarde<KK, K> keySarde, CollectionSarde<String, String> valueSarde) {
+		public KafkaSet(Set<K> delegateSet, CollectionConfig collectionConfig, CollectionSerde<KK, K> keySarde, CollectionSerde<String, String> valueSarde) {
 				super(collectionConfig,keySarde,valueSarde);
 
 				this.delegateSet = delegateSet;

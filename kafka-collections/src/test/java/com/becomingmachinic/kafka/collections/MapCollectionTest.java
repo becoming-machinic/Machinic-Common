@@ -65,7 +65,7 @@ public class MapCollectionTest {
 				configurationMap.put(CollectionConfig.COLLECTION_WRITE_MODE, CollectionConfig.COLLECTION_WRITE_MODE_AHEAD);
 				configurationMap.put(CollectionConfig.COLLECTION_SEND_MODE, CollectionConfig.COLLECTION_SEND_MODE_SYNCHRONOUS);
 
-				try (KMap<String, String>  map = new KafkaMap<String, String, String, String>(new CollectionConfig(configurationMap), CollectionSarde.stringToString(), CollectionSarde.stringToString())) {
+				try (KMap<String, String>  map = new KafkaMap<String, String, String, String>(new CollectionConfig(configurationMap), CollectionSerde.stringToString(), CollectionSerde.stringToString())) {
 						map.awaitWarmupComplete(30, TimeUnit.SECONDS);
 						Assertions.assertEquals(0, map.size());
 
@@ -73,7 +73,7 @@ public class MapCollectionTest {
 						Assertions.assertEquals(1, map.size());
 				}
 
-				try (KMap<String, String>  map = new KafkaMap<String, String, String, String>(new CollectionConfig(configurationMap), CollectionSarde.stringToString(), CollectionSarde.stringToString())) {
+				try (KMap<String, String>  map = new KafkaMap<String, String, String, String>(new CollectionConfig(configurationMap), CollectionSerde.stringToString(), CollectionSerde.stringToString())) {
 						map.awaitWarmupComplete(30, TimeUnit.SECONDS);
 						Assertions.assertEquals(1, map.size());
 						Assertions.assertEquals("test message", map.get("test message"));
@@ -86,7 +86,7 @@ public class MapCollectionTest {
 				configurationMap.put(CollectionConfig.COLLECTION_WRITE_MODE, CollectionConfig.COLLECTION_WRITE_MODE_AHEAD);
 				configurationMap.put(CollectionConfig.COLLECTION_SEND_MODE, CollectionConfig.COLLECTION_SEND_MODE_SYNCHRONOUS);
 
-				try (KMap<String, String>  map = new KafkaMap<String, String, String, String>(new CollectionConfig(configurationMap), CollectionSarde.stringToString(), CollectionSarde.stringToString())) {
+				try (KMap<String, String>  map = new KafkaMap<String, String, String, String>(new CollectionConfig(configurationMap), CollectionSerde.stringToString(), CollectionSerde.stringToString())) {
 						map.awaitWarmupComplete(30, TimeUnit.SECONDS);
 						Assertions.assertEquals(0, map.size());
 
@@ -125,7 +125,7 @@ public class MapCollectionTest {
 				configurationMap.put(CollectionConfig.COLLECTION_WRITE_MODE, CollectionConfig.COLLECTION_WRITE_MODE_BEHIND);
 				configurationMap.put(CollectionConfig.COLLECTION_SEND_MODE, CollectionConfig.COLLECTION_SEND_MODE_SYNCHRONOUS);
 
-				try (KMap<String, String>  map = new KafkaMap<String, String, String, String>(new CollectionConfig(configurationMap), CollectionSarde.stringToString(), CollectionSarde.stringToString())) {
+				try (KMap<String, String>  map = new KafkaMap<String, String, String, String>(new CollectionConfig(configurationMap), CollectionSerde.stringToString(), CollectionSerde.stringToString())) {
 						map.awaitWarmupComplete(30, TimeUnit.SECONDS);
 						Assertions.assertEquals(0, map.size());
 
@@ -161,7 +161,7 @@ public class MapCollectionTest {
 				configurationMap.put(CollectionConfig.COLLECTION_WRITE_MODE, CollectionConfig.COLLECTION_WRITE_MODE_AHEAD);
 				configurationMap.put(CollectionConfig.COLLECTION_SEND_MODE, CollectionConfig.COLLECTION_SEND_MODE_SYNCHRONOUS);
 
-				try (KMap<String, String>  map = new KafkaMap<String, String, String, String>(new CollectionConfig(configurationMap), CollectionSarde.stringToString(), CollectionSarde.stringToString())) {
+				try (KMap<String, String>  map = new KafkaMap<String, String, String, String>(new CollectionConfig(configurationMap), CollectionSerde.stringToString(), CollectionSerde.stringToString())) {
 						map.awaitWarmupComplete(30, TimeUnit.SECONDS);
 						Assertions.assertEquals(0, map.size());
 
@@ -204,7 +204,7 @@ public class MapCollectionTest {
 				configurationMap.put(CollectionConfig.COLLECTION_WRITE_MODE, CollectionConfig.COLLECTION_WRITE_MODE_BEHIND);
 				configurationMap.put(CollectionConfig.COLLECTION_SEND_MODE, CollectionConfig.COLLECTION_SEND_MODE_SYNCHRONOUS);
 
-				try (KMap<String, String>  map = new KafkaMap<String, String, String, String>(new CollectionConfig(configurationMap), CollectionSarde.stringToString(), CollectionSarde.stringToString())) {
+				try (KMap<String, String>  map = new KafkaMap<String, String, String, String>(new CollectionConfig(configurationMap), CollectionSerde.stringToString(), CollectionSerde.stringToString())) {
 						map.awaitWarmupComplete(30, TimeUnit.SECONDS);
 						Assertions.assertEquals(0, map.size());
 
@@ -246,7 +246,7 @@ public class MapCollectionTest {
 				configurationMap.put(CollectionConfig.COLLECTION_SEND_MODE, CollectionConfig.COLLECTION_SEND_MODE_ASYNCHRONOUS);
 				configurationMap.put(CollectionConfig.COLLECTION_WRITE_MODE, CollectionConfig.COLLECTION_WRITE_MODE_BEHIND);
 
-				try (KMap<String, String>  map = new KafkaMap<String, String, String, String>(new CollectionConfig(configurationMap), CollectionSarde.stringToString(), CollectionSarde.stringToString())) {
+				try (KMap<String, String>  map = new KafkaMap<String, String, String, String>(new CollectionConfig(configurationMap), CollectionSerde.stringToString(), CollectionSerde.stringToString())) {
 						map.awaitWarmupComplete(30, TimeUnit.SECONDS);
 						Assertions.assertEquals(0, map.size());
 
@@ -273,7 +273,7 @@ public class MapCollectionTest {
 				configurationMap.put(CollectionConfig.COLLECTION_SEND_MODE, CollectionConfig.COLLECTION_SEND_MODE_ASYNCHRONOUS);
 				configurationMap.put(CollectionConfig.COLLECTION_WRITE_MODE, CollectionConfig.COLLECTION_WRITE_MODE_AHEAD);
 
-				try (KMap<String, String>  map = new KafkaMap<String, String, String, String>(new CollectionConfig(configurationMap), CollectionSarde.stringToString(), CollectionSarde.stringToString())) {
+				try (KMap<String, String>  map = new KafkaMap<String, String, String, String>(new CollectionConfig(configurationMap), CollectionSerde.stringToString(), CollectionSerde.stringToString())) {
 						map.awaitWarmupComplete(30, TimeUnit.SECONDS);
 						Assertions.assertEquals(0, map.size());
 
@@ -299,7 +299,7 @@ public class MapCollectionTest {
 				configurationMap.put(CollectionConfig.COLLECTION_SEND_MODE, CollectionConfig.COLLECTION_SEND_MODE_ASYNCHRONOUS);
 				configurationMap.put(CollectionConfig.COLLECTION_WRITE_MODE, CollectionConfig.COLLECTION_WRITE_MODE_BEHIND);
 
-				try (KMap<String, String>  map = new KafkaMap<String, String, String, String>(new CollectionConfig(configurationMap), CollectionSarde.stringToString(), CollectionSarde.stringToString())) {
+				try (KMap<String, String>  map = new KafkaMap<String, String, String, String>(new CollectionConfig(configurationMap), CollectionSerde.stringToString(), CollectionSerde.stringToString())) {
 						map.awaitWarmupComplete(30, TimeUnit.SECONDS);
 						Assertions.assertEquals(0, map.size());
 
@@ -331,7 +331,7 @@ public class MapCollectionTest {
 				configurationMap.put(CollectionConfig.COLLECTION_WRITE_MODE, CollectionConfig.COLLECTION_WRITE_MODE_AHEAD);
 				configurationMap.put(CollectionConfig.COLLECTION_SEND_MODE, CollectionConfig.COLLECTION_SEND_MODE_SYNCHRONOUS);
 
-				try (KafkaMap<String,String,String, String>  map = new KafkaMap<String, String, String, String>(new CollectionConfig(configurationMap), CollectionSarde.stringToString(), CollectionSarde.stringToString())) {
+				try (KafkaMap<String,String,String, String>  map = new KafkaMap<String, String, String, String>(new CollectionConfig(configurationMap), CollectionSerde.stringToString(), CollectionSerde.stringToString())) {
 						map.awaitWarmupComplete(30, TimeUnit.SECONDS);
 						Assertions.assertEquals(0, map.size());
 
@@ -384,8 +384,8 @@ public class MapCollectionTest {
 						.valueSerializer(Serializer.STRING)
 						.create();
 
-				try (KMap<String, String>  map = new KafkaMap<String, String, String, String>(hTreeMap, new CollectionConfig(configurationMap), CollectionSarde.stringToString(),
-						CollectionSarde.stringToString())) {
+				try (KMap<String, String>  map = new KafkaMap<String, String, String, String>(hTreeMap, new CollectionConfig(configurationMap), CollectionSerde.stringToString(),
+						CollectionSerde.stringToString())) {
 						map.awaitWarmupComplete(30, TimeUnit.SECONDS);
 						Assertions.assertEquals(0, map.size());
 
@@ -411,7 +411,7 @@ public class MapCollectionTest {
 				configurationMap.put(CollectionConfig.COLLECTION_PARTITIONS, 16);
 				configurationMap.put(ConsumerConfig.GROUP_ID_CONFIG, "mapGroupIdTest");
 
-				try (KMap<String, String>  map = new KafkaMap<String, String, String, String>(new CollectionConfig(configurationMap), CollectionSarde.stringToString(), CollectionSarde.stringToString())) {
+				try (KMap<String, String>  map = new KafkaMap<String, String, String, String>(new CollectionConfig(configurationMap), CollectionSerde.stringToString(), CollectionSerde.stringToString())) {
 						map.awaitWarmupComplete(30, TimeUnit.SECONDS);
 						Assertions.assertEquals(0, map.size());
 
@@ -423,7 +423,7 @@ public class MapCollectionTest {
 				RunnableTest task1 = new RunnableTest() {
 						@Override
 						public void runTest() {
-								try (KMap<String, String>  map = new KafkaMap<String, String, String, String>(new CollectionConfig(configurationMap), CollectionSarde.stringToString(), CollectionSarde.stringToString())) {
+								try (KMap<String, String>  map = new KafkaMap<String, String, String, String>(new CollectionConfig(configurationMap), CollectionSerde.stringToString(), CollectionSerde.stringToString())) {
 										map.awaitWarmupComplete(30, TimeUnit.SECONDS);
 										Assertions.assertEquals(1024, map.size());
 
@@ -440,7 +440,7 @@ public class MapCollectionTest {
 				RunnableTest task2 = new RunnableTest() {
 						@Override
 						public void runTest() {
-								try (KMap<String, String> map = new KafkaMap<String, String, String, String>(new CollectionConfig(configurationMap), CollectionSarde.stringToString(), CollectionSarde.stringToString())) {
+								try (KMap<String, String> map = new KafkaMap<String, String, String, String>(new CollectionConfig(configurationMap), CollectionSerde.stringToString(), CollectionSerde.stringToString())) {
 										map.awaitWarmupComplete(30, TimeUnit.SECONDS);
 										Assertions.assertEquals(1024, map.size());
 
@@ -467,7 +467,7 @@ public class MapCollectionTest {
 				configurationMap.put(CollectionConfig.COLLECTION_NAME, "configLogTest");
 				configurationMap.put("unused.property", "unusedPropertyValue");
 
-				try (KafkaMap<String, String, String, String> map = new KafkaMap<String, String, String, String>(new CollectionConfig(configurationMap), CollectionSarde.stringToString(), CollectionSarde.stringToString())) {
+				try (KafkaMap<String, String, String, String> map = new KafkaMap<String, String, String, String>(new CollectionConfig(configurationMap), CollectionSerde.stringToString(), CollectionSerde.stringToString())) {
 						map.awaitWarmupComplete(30, TimeUnit.SECONDS);
 						Assertions.assertEquals(0, map.size());
 				}

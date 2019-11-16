@@ -14,27 +14,25 @@
 
 package com.becomingmachinic.kafka.collections.extensions;
 
-import com.becomingmachinic.kafka.collections.CollectionStringSarde;
+import com.becomingmachinic.kafka.collections.CollectionStringSerde;
 import com.becomingmachinic.kafka.collections.SerializationException;
-import com.fasterxml.jackson.core.type.TypeReference;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.gson.Gson;
 
 import java.lang.reflect.Type;
 
-public class JacksonToStringCollectionSarde<T> implements CollectionStringSarde<T> {
+public class GsonToStringCollectionSerde<T> implements CollectionStringSerde<T> {
 
-		protected final ObjectMapper objectMapper;
+		protected final Gson gson;
 		protected final Class<T> classOfT;
-		protected final TypeReference<T> typeOfT;
+		protected final Type typeOfT;
 
-		public JacksonToStringCollectionSarde(ObjectMapper objectMapper, Class<T> classOfT) {
-				this.objectMapper = objectMapper;
+		public GsonToStringCollectionSerde(Gson gson, Class<T> classOfT) {
+				this.gson = gson;
 				this.classOfT = classOfT;
 				this.typeOfT = null;
 		}
-		public JacksonToStringCollectionSarde(ObjectMapper objectMapper, TypeReference<T> typeOfT) {
-				this.objectMapper = objectMapper;
+		public GsonToStringCollectionSerde(Gson gson, Type typeOfT) {
+				this.gson = gson;
 				this.classOfT = null;
 				this.typeOfT = typeOfT;
 		}
@@ -43,9 +41,9 @@ public class JacksonToStringCollectionSarde<T> implements CollectionStringSarde<
 		public String serialize(T value) throws SerializationException {
 				if (value != null) {
 						try {
-								return this.objectMapper.writeValueAsString(value);
+								return this.gson.toJson(value);
 						} catch (Exception e) {
-								throw new SerializationException("Serialize value failed", e);
+								throw new SerializationException("Serialize value failed.", e);
 						}
 				}
 				return null;
@@ -55,9 +53,9 @@ public class JacksonToStringCollectionSarde<T> implements CollectionStringSarde<
 				if (raw != null) {
 						try {
 								if (this.classOfT != null) {
-										return this.objectMapper.readValue(raw, this.classOfT);
+										return this.gson.fromJson(raw, classOfT);
 								} else {
-										return this.objectMapper.readValue(raw, typeOfT);
+										return this.gson.fromJson(raw, typeOfT);
 								}
 						} catch (Exception e) {
 								throw new SerializationException("Deserialize value failed", e);

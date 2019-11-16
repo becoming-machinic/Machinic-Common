@@ -19,7 +19,7 @@ import org.apache.kafka.common.serialization.ByteArraySerializer;
 import org.apache.kafka.common.serialization.Deserializer;
 import org.apache.kafka.common.serialization.Serializer;
 
-public interface CollectionByteArraySarde<V> extends CollectionSarde<byte[],V> {
+public interface CollectionByteArraySerde<V> extends CollectionSerde<byte[],V> {
 
     @Override
     public byte[] serialize(V value) throws SerializationException;

@@ -14,7 +14,7 @@
 
 package com.becomingmachinic.kafka.collections;
 
-public class StringToStringCollectionSarde implements CollectionStringSarde<String> {
+public class StringToStringCollectionSarde implements CollectionStringSerde<String> {
     @Override
     public String serialize(String value) {
         return value;
