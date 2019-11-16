@@ -3,7 +3,7 @@
 [![Build Status](https://travis-ci.org/becoming-machinic/Machinic-Kafka.svg?branch=master)](https://travis-ci.org/becoming-machinic/Machinic-Kafka)
 
 ## Components
-- [Kafka Collections](https://github.com/becoming-machinic/Machinic-Kafka/blob/master/kafka-collections/pom.xml)
+- [Kafka Collections](https://github.com/becoming-machinic/Machinic-Kafka/blob/master/kafka-collections/README.md)
 
 ### License
 
