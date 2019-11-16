@@ -15,19 +15,19 @@
 package com.becomingmachinic.kafka.collections;
 
 public class ByteArrayToHashCollectionSerde implements CollectionByteArraySerde<Hash> {
-
-		@Override
-		public byte[] serialize(Hash value) throws SerializationException {
-				if (value != null) {
-						return value.buffer;
-				}
-				return null;
+	
+	@Override
+	public byte[] serialize(Hash value) throws SerializationException {
+		if (value != null) {
+			return value.buffer;
 		}
-		@Override
-		public Hash deserialize(byte[] raw) throws SerializationException {
-				if (raw != null) {
-						return Hash.wrap(raw);
-				}
-				return null;
+		return null;
+	}
+	@Override
+	public Hash deserialize(byte[] raw) throws SerializationException {
+		if (raw != null) {
+			return Hash.wrap(raw);
 		}
+		return null;
+	}
 }

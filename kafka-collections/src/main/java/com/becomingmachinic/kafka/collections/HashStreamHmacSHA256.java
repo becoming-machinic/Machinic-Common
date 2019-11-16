@@ -14,31 +14,30 @@
 
 package com.becomingmachinic.kafka.collections;
 
+import java.security.InvalidKeyException;
+import java.security.NoSuchAlgorithmException;
+
 import javax.crypto.Mac;
 import javax.crypto.SecretKey;
 import javax.crypto.spec.SecretKeySpec;
-import java.security.InvalidKeyException;
-import java.security.MessageDigest;
-import java.security.NoSuchAlgorithmException;
 
-public class HashStreamHmacSHA256 extends AbstractHmacHashStream{
-
-
-		public HashStreamHmacSHA256(byte[] hashKey){
-				super(hashKey);
+public class HashStreamHmacSHA256 extends AbstractHmacHashStream {
+	
+	public HashStreamHmacSHA256(byte[] hashKey) {
+		super(hashKey);
+	}
+	
+	@Override
+	protected Mac getMacInstance(byte[] hashKey) throws HashStreamException {
+		try {
+			Mac mac = Mac.getInstance("HmacSHA256");
+			SecretKey key = new SecretKeySpec(hashKey, "HmacSHA256");
+			mac.init(key);
+			return mac;
+		} catch (InvalidKeyException e) {
+			throw new HashStreamException("Hmac Key Not Valid.", e);
+		} catch (NoSuchAlgorithmException e) {
+			throw new HashStreamException("HmacSHA256 Algorithm Not Found.", e);
 		}
-
-		@Override
-		protected Mac getMacInstance(byte[] hashKey) throws HashStreamException {
-				try {
-						Mac mac = Mac.getInstance("HmacSHA256");
-						SecretKey key = new SecretKeySpec(hashKey, "HmacSHA256");
-						mac.init(key);
-						return mac;
-				} catch (InvalidKeyException e) {
-						throw new HashStreamException("Hmac Key Not Valid.", e);
-				} catch (NoSuchAlgorithmException e) {
-						throw new HashStreamException("HmacSHA256 Algorithm Not Found.", e);
-				}
-		}
+	}
 }

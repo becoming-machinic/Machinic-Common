@@ -17,6 +17,6 @@ package com.becomingmachinic.kafka.collections;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
 
-public interface KSet<E> extends Set<E>,AutoCloseable {
-		public boolean awaitWarmupComplete(long timeout, TimeUnit unit) throws InterruptedException;
+public interface KSet<E> extends Set<E>, AutoCloseable {
+	public boolean awaitWarmupComplete(long timeout, TimeUnit unit) throws InterruptedException;
 }

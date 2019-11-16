@@ -12,49 +12,47 @@
  * the License.
  */
 
-
 package com.becomingmachinic.kafka.collections;
 
-public abstract class AbstractKafkaHashSet<K> extends AbstractKafkaSet<byte[],Hash> {
-
-		protected static final String VALUE = "1";
-
-		protected final CollectionSerde<byte[], Hash> keySerde;
-		protected final CollectionSerde<String, String> valueSerde;
-		protected final HashingSerializer<K> hashingSerializer;
-		protected final HashStreamProvider hashStreamProvider;
-
-		public AbstractKafkaHashSet(CollectionConfig collectionConfig, HashingSerializer<K> hashingSerializer, HashStreamProvider hashStreamProvider, CollectionSerde<byte[], Hash> keySerde, CollectionSerde<String, String> valueSerde) {
-				super(collectionConfig,keySerde,valueSerde);
-
-				this.keySerde = keySerde;
-				this.valueSerde = valueSerde;
-				this.hashingSerializer = hashingSerializer;
-				this.hashStreamProvider = hashStreamProvider;
-		}
-
-		protected Hash getHash(K value) throws HashStreamException {
-				try (HashStream hashStream = this.hashStreamProvider.createHashStream()) {
-						try (DataStream dataStream = new DataStream(hashStream)) {
-								if (!this.hashingSerializer.serialize(dataStream, value)) {
-										return null;
-								}
-						}
-						return hashStream.getHashes();
-				} catch (ClassCastException e){
-						return null;
-				} catch (Exception e) {
-						throw new HashStreamException("Serializing value via hashingSerializer failed", e);
+public abstract class AbstractKafkaHashSet<K> extends AbstractKafkaSet<byte[], Hash> {
+	
+	protected static final String VALUE = "1";
+	
+	protected final CollectionSerde<byte[], Hash> keySerde;
+	protected final CollectionSerde<String, String> valueSerde;
+	protected final HashingSerializer<K> hashingSerializer;
+	protected final HashStreamProvider hashStreamProvider;
+	
+	public AbstractKafkaHashSet(CollectionConfig collectionConfig, HashingSerializer<K> hashingSerializer, HashStreamProvider hashStreamProvider, CollectionSerde<byte[], Hash> keySerde, CollectionSerde<String, String> valueSerde) {
+		super(collectionConfig, keySerde, valueSerde);
+		
+		this.keySerde = keySerde;
+		this.valueSerde = valueSerde;
+		this.hashingSerializer = hashingSerializer;
+		this.hashStreamProvider = hashStreamProvider;
+	}
+	
+	protected Hash getHash(K value) throws HashStreamException {
+		try (HashStream hashStream = this.hashStreamProvider.createHashStream()) {
+			try (DataStream dataStream = new DataStream(hashStream)) {
+				if (!this.hashingSerializer.serialize(dataStream, value)) {
+					return null;
 				}
+			}
+			return hashStream.getHashes();
+		} catch (ClassCastException e) {
+			return null;
+		} catch (Exception e) {
+			throw new HashStreamException("Serializing value via hashingSerializer failed", e);
 		}
-
-		protected boolean addKey(K k){
-				return this.collectionAdd(this.getHash(k));
-		}
-
-
-		protected boolean removeKey(K k) {
-				return this.collectionRemove(this.getHash(k));
-		}
-
+	}
+	
+	protected boolean addKey(K k) {
+		return this.collectionAdd(this.getHash(k));
+	}
+	
+	protected boolean removeKey(K k) {
+		return this.collectionRemove(this.getHash(k));
+	}
+	
 }

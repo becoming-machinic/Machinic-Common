@@ -15,21 +15,22 @@
 package com.becomingmachinic.kafka.collections;
 
 public class SerializationException extends KafkaCollectionException {
-
-		public SerializationException(String message) {
-				super(message);
-		}
-
-		public SerializationException(String message, Throwable cause) {
-				super(String.format("%s. Caused by %s", message, cause.getMessage()), cause);
-		}
-
-		public SerializationException(String message, String... vars) {
-				this(String.format(message, (Object[]) vars));
-		}
-
-		public SerializationException(String message, Throwable cause, String... vars) {
-				this(String.format(message, (Object[]) vars), cause);
-		}
-
+	private static final long serialVersionUID = 8560017863931410996L;
+	
+	public SerializationException(String message) {
+		super(message);
+	}
+	
+	public SerializationException(String message, Throwable cause) {
+		super(String.format("%s. Caused by %s", message, cause.getMessage()), cause);
+	}
+	
+	public SerializationException(String message, String... vars) {
+		this(String.format(message, (Object[]) vars));
+	}
+	
+	public SerializationException(String message, Throwable cause, String... vars) {
+		this(String.format(message, (Object[]) vars), cause);
+	}
+	
 }

@@ -16,21 +16,24 @@ package com.becomingmachinic.kafka.collections;
 
 import java.io.IOException;
 import java.io.OutputStream;
-import java.nio.ByteBuffer;
 
 /**
  * Base HashStream that all HashStream implementations should extend.
+ * 
  * @author Caleb Shingledecker
  *
  */
 public abstract class HashStream extends OutputStream implements AutoCloseable {
 	
+	@Override
 	public abstract void write(int b) throws IOException;
 	
+	@Override
 	public abstract void write(byte[] b) throws IOException;
 	
+	@Override
 	public abstract void write(byte[] b, int off, int len) throws IOException;
 	
 	public abstract Hash getHashes() throws IOException;
-
+	
 }

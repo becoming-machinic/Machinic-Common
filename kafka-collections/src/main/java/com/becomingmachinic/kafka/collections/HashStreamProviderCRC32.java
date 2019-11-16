@@ -16,18 +16,19 @@ package com.becomingmachinic.kafka.collections;
 
 /**
  * The CRC32 hash provider hashes the input value using a standard CRC32 checksum.
+ * 
  * @author caleb
  *
  */
-public class HashStreamProviderCRC32 implements HashStreamProvider{
-
+public class HashStreamProviderCRC32 implements HashStreamProvider {
+	
 	@Override
 	public HashStream createHashStream() throws HashStreamException {
 		return new HashStreamCRC32();
 	}
-
-		@Override
-		public int getNumberOfHashFunctions() {
-				return 1;
-		}
+	
+	@Override
+	public int getNumberOfHashFunctions() {
+		return 1;
+	}
 }

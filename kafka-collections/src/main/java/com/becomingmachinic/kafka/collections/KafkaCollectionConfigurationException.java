@@ -15,21 +15,22 @@
 package com.becomingmachinic.kafka.collections;
 
 public class KafkaCollectionConfigurationException extends KafkaCollectionException {
-
-		public KafkaCollectionConfigurationException(String message) {
-				super(message);
-		}
-
-		public KafkaCollectionConfigurationException(String message, Throwable cause) {
-				super(String.format("%s. Caused by %s", message, cause.getMessage()), cause);
-		}
-
-		public KafkaCollectionConfigurationException(String message, String... vars) {
-				this(String.format(message, (Object[])vars));
-		}
-
-		public KafkaCollectionConfigurationException(String message, Throwable cause, String... vars) {
-				this(String.format(message, (Object[])vars), cause);
-		}
-
+	private static final long serialVersionUID = -2227990051734531512L;
+	
+	public KafkaCollectionConfigurationException(String message) {
+		super(message);
+	}
+	
+	public KafkaCollectionConfigurationException(String message, Throwable cause) {
+		super(String.format("%s. Caused by %s", message, cause.getMessage()), cause);
+	}
+	
+	public KafkaCollectionConfigurationException(String message, String... vars) {
+		this(String.format(message, (Object[]) vars));
+	}
+	
+	public KafkaCollectionConfigurationException(String message, Throwable cause, String... vars) {
+		this(String.format(message, (Object[]) vars), cause);
+	}
+	
 }

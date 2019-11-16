@@ -14,40 +14,41 @@
 
 package com.becomingmachinic.kafka.collections;
 
-import javax.crypto.Mac;
 import java.io.IOException;
-import java.security.MessageDigest;
+
+import javax.crypto.Mac;
 
 public abstract class AbstractHmacHashStream extends HashStream {
-
-		private final Mac digest;
-		private Hash result = null;
-
-		protected AbstractHmacHashStream(byte[] hashKey){
-				this.digest = this.getMacInstance(hashKey);
+	
+	private final Mac digest;
+	private Hash result = null;
+	
+	protected AbstractHmacHashStream(byte[] hashKey) {
+		this.digest = this.getMacInstance(hashKey);
+	}
+	
+	protected abstract Mac getMacInstance(byte[] hashKey) throws HashStreamException;
+	
+	@Override
+	public void write(int b) throws IOException {
+		this.digest.update((byte) b);
+	}
+	
+	@Override
+	public void write(byte[] b) throws IOException {
+		this.write(b, 0, b.length);
+	}
+	
+	@Override
+	public void write(byte[] b, int off, int len) throws IOException {
+		this.digest.update(b, off, len);
+	}
+	
+	@Override
+	public Hash getHashes() {
+		if (this.result == null) {
+			this.result = Hash.wrap(this.digest.doFinal());
 		}
-
-		protected abstract Mac getMacInstance(byte[] hashKey) throws HashStreamException;
-
-		@Override
-		public void write(int b) throws IOException {
-				this.digest.update((byte) b);
-		}
-
-		@Override
-		public void write(byte[] b) throws IOException {
-				this.write(b, 0, b.length);
-		}
-
-		@Override
-		public void write(byte[] b, int off, int len) throws IOException {
-				this.digest.update(b, off, len);
-		}
-
-		public Hash getHashes() {
-				if (this.result == null) {
-						this.result = Hash.wrap(this.digest.doFinal());
-				}
-				return this.result;
-		}
+		return this.result;
+	}
 }

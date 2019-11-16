@@ -15,28 +15,26 @@
 package com.becomingmachinic.kafka.collections;
 
 /**
- * The HMAC SHA512 hash stream hashes the data using the SHA512 HMAC (Keyed hash) to make it impossible for an attacker to predict a
- * resulting and therefore exploit a collision in the bloom filter. For this to be true the hashKey must remain unknown to the attacker.
- * A HMAC SHA512 has is more computationally expensive than a standard SHA512 hash so if this added security is not needed then the standard
- * SHA512 provider should be used.
+ * The HMAC SHA512 hash stream hashes the data using the SHA512 HMAC (Keyed hash) to make it impossible for an attacker to predict a resulting and therefore exploit a collision in the bloom filter. For this to be true the hashKey must remain unknown to the
+ * attacker. A HMAC SHA512 has is more computationally expensive than a standard SHA512 hash so if this added security is not needed then the standard SHA512 provider should be used.
  *
  * @author caleb
  */
 public class HashStreamProviderHmacSHA512 implements HashStreamProvider {
-
-		private final byte[] hashKey;
-
-		public HashStreamProviderHmacSHA512(byte[] hashKey) {
-				this.hashKey = hashKey;
-		}
-
-		@Override
-		public HashStream createHashStream() throws HashStreamException {
-				return new HashStreamHmacSHA512(this.hashKey);
-		}
-
-		@Override
-		public int getNumberOfHashFunctions() {
-				return 16;
-		}
+	
+	private final byte[] hashKey;
+	
+	public HashStreamProviderHmacSHA512(byte[] hashKey) {
+		this.hashKey = hashKey;
+	}
+	
+	@Override
+	public HashStream createHashStream() throws HashStreamException {
+		return new HashStreamHmacSHA512(this.hashKey);
+	}
+	
+	@Override
+	public int getNumberOfHashFunctions() {
+		return 16;
+	}
 }

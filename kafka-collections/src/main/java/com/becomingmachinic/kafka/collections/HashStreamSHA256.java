@@ -14,19 +14,18 @@
 
 package com.becomingmachinic.kafka.collections;
 
-import java.io.IOException;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 
-public class HashStreamSHA256 extends AbstractCryptographicHashStream{
-
-		@Override
-		protected MessageDigest getDigestInstance() throws HashStreamException {
-				try {
-						return MessageDigest.getInstance("SHA-256");
-				} catch (NoSuchAlgorithmException e) {
-						throw new HashStreamException("SHA256 Algorithm Not Found.", e);
-				}
+public class HashStreamSHA256 extends AbstractCryptographicHashStream {
+	
+	@Override
+	protected MessageDigest getDigestInstance() throws HashStreamException {
+		try {
+			return MessageDigest.getInstance("SHA-256");
+		} catch (NoSuchAlgorithmException e) {
+			throw new HashStreamException("SHA256 Algorithm Not Found.", e);
 		}
-
+	}
+	
 }

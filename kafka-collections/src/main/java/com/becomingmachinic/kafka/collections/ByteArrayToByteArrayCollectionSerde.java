@@ -15,11 +15,13 @@
 package com.becomingmachinic.kafka.collections;
 
 public class ByteArrayToByteArrayCollectionSerde implements CollectionByteArraySerde<byte[]> {
-
-		@Override public byte[] serialize(byte[] value) throws SerializationException {
-				return value;
-		}
-		@Override public byte[] deserialize(byte[] raw) throws SerializationException {
-				return raw;
-		}
+	
+	@Override
+	public byte[] serialize(byte[] value) throws SerializationException {
+		return value;
+	}
+	@Override
+	public byte[] deserialize(byte[] raw) throws SerializationException {
+		return raw;
+	}
 }

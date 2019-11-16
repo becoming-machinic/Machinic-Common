@@ -19,21 +19,21 @@ import org.apache.kafka.common.serialization.ByteArraySerializer;
 import org.apache.kafka.common.serialization.Deserializer;
 import org.apache.kafka.common.serialization.Serializer;
 
-public interface CollectionByteArraySerde<V> extends CollectionSerde<byte[],V> {
-
-    @Override
-    public byte[] serialize(V value) throws SerializationException;
-
-    @Override
-    public V deserialize(byte[] raw) throws SerializationException;
-
-    @Override
-    public default Serializer<byte[]> getRawSerializer() {
-        return new ByteArraySerializer();
-    }
-
-    @Override
-    public default Deserializer<byte[]> getRawDeserializer() {
-        return new ByteArrayDeserializer();
-    }
+public interface CollectionByteArraySerde<V> extends CollectionSerde<byte[], V> {
+	
+	@Override
+	public byte[] serialize(V value) throws SerializationException;
+	
+	@Override
+	public V deserialize(byte[] raw) throws SerializationException;
+	
+	@Override
+	public default Serializer<byte[]> getRawSerializer() {
+		return new ByteArraySerializer();
+	}
+	
+	@Override
+	public default Deserializer<byte[]> getRawDeserializer() {
+		return new ByteArrayDeserializer();
+	}
 }

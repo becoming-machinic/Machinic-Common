@@ -17,15 +17,15 @@ package com.becomingmachinic.kafka.collections;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 
-public class HashStreamSHA512 extends AbstractCryptographicHashStream{
-
-		@Override
-		protected MessageDigest getDigestInstance() throws HashStreamException {
-				try {
-						return MessageDigest.getInstance("SHA-512");
-				} catch (NoSuchAlgorithmException e) {
-						throw new HashStreamException("SHA512 Algorithm Not Found.", e);
-				}
+public class HashStreamSHA512 extends AbstractCryptographicHashStream {
+	
+	@Override
+	protected MessageDigest getDigestInstance() throws HashStreamException {
+		try {
+			return MessageDigest.getInstance("SHA-512");
+		} catch (NoSuchAlgorithmException e) {
+			throw new HashStreamException("SHA512 Algorithm Not Found.", e);
 		}
-
+	}
+	
 }

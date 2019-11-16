@@ -15,21 +15,21 @@
 package com.becomingmachinic.kafka.collections;
 
 public class HashStreamException extends KafkaCollectionException {
-
-		public HashStreamException(String message) {
-				super(message);
-		}
-
-		public HashStreamException(String message, Throwable cause) {
-				super(String.format("%s. Caused by %s", message, cause.getMessage()), cause);
-		}
-
-		public HashStreamException(String message, String... vars) {
-				this(String.format(message, (Object[]) vars));
-		}
-
-		public HashStreamException(String message, Throwable cause, String... vars) {
-				this(String.format(message, (Object[]) vars), cause);
-		}
-
+	
+	public HashStreamException(String message) {
+		super(message);
+	}
+	
+	public HashStreamException(String message, Throwable cause) {
+		super(String.format("%s. Caused by %s", message, cause.getMessage()), cause);
+	}
+	
+	public HashStreamException(String message, String... vars) {
+		this(String.format(message, (Object[]) vars));
+	}
+	
+	public HashStreamException(String message, Throwable cause, String... vars) {
+		this(String.format(message, (Object[]) vars), cause);
+	}
+	
 }

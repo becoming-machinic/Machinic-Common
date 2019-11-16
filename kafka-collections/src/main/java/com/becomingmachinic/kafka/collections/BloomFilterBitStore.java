@@ -15,9 +15,9 @@
 package com.becomingmachinic.kafka.collections;
 
 public interface BloomFilterBitStore {
-		public boolean setHash(Hash hash,int hashCount);
-		public boolean containsHash(Hash hash,int hashCount);
-		public long size();
-		public long getExpectedNumberOfItemsN();
-		public double getExpectedFalsePositiveProbability();
+	public boolean setHash(Hash hash, int hashCount);
+	public boolean containsHash(Hash hash, int hashCount);
+	public long size();
+	public long getExpectedNumberOfItemsN();
+	public double getExpectedFalsePositiveProbability();
 }

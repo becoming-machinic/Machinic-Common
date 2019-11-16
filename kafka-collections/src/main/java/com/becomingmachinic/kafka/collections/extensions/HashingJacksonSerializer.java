@@ -20,29 +20,28 @@ import com.becomingmachinic.kafka.collections.SerializationException;
 import com.fasterxml.jackson.databind.MapperFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
-import com.google.gson.Gson;
 
 public class HashingJacksonSerializer<T> implements HashingSerializer<T> {
-		protected final ObjectMapper objectMapper;
-
-		public HashingJacksonSerializer() {
-				this(new ObjectMapper().configure(MapperFeature.SORT_PROPERTIES_ALPHABETICALLY, true).configure(SerializationFeature.ORDER_MAP_ENTRIES_BY_KEYS, true));
+	protected final ObjectMapper objectMapper;
+	
+	public HashingJacksonSerializer() {
+		this(new ObjectMapper().configure(MapperFeature.SORT_PROPERTIES_ALPHABETICALLY, true).configure(SerializationFeature.ORDER_MAP_ENTRIES_BY_KEYS, true));
+	}
+	
+	public HashingJacksonSerializer(ObjectMapper objectMapper) {
+		this.objectMapper = objectMapper;
+	}
+	
+	@Override
+	public boolean serialize(DataStream out, T value) throws SerializationException {
+		if (value != null) {
+			try {
+				out.putString(objectMapper.writeValueAsString(value));
+				return true;
+			} catch (Exception e) {
+				throw new SerializationException("Serializing value failed", e);
+			}
 		}
-
-		public HashingJacksonSerializer(ObjectMapper objectMapper) {
-				this.objectMapper = objectMapper;
-		}
-
-		@Override
-		public boolean serialize(DataStream out, T value) throws SerializationException {
-				if (value != null) {
-						try {
-								out.putString(objectMapper.writeValueAsString(value));
-								return true;
-						} catch (Exception e) {
-								throw new SerializationException("Serializing value failed", e);
-						}
-				}
-				return false;
-		}
+		return false;
+	}
 }

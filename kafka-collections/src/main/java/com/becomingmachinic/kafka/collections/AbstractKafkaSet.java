@@ -14,80 +14,77 @@
 
 package com.becomingmachinic.kafka.collections;
 
-import java.util.Set;
-
-public abstract class AbstractKafkaSet<KK,K> extends AbstractKafkaCollection<KK,String> {
-
-		protected static final String VALUE = "1";
-
-		protected final CollectionSerde<KK, K> keySerde;
-		protected final CollectionSerde<String, String> valueSerde;
-
-
-		public AbstractKafkaSet(CollectionConfig collectionConfig, CollectionSerde<KK, K> keySerde, CollectionSerde<String, String> valueSerde) {
-				super(collectionConfig,
-						new CollectionProducer<KK, String>(collectionConfig, keySerde.getRawSerializer(), valueSerde.getRawSerializer()),
-						new CollectionConsumer<KK, String>(collectionConfig, keySerde.getRawDeserializer(), valueSerde.getRawDeserializer()));
-
-				this.keySerde = keySerde;
-				this.valueSerde = valueSerde;
+public abstract class AbstractKafkaSet<KK, K> extends AbstractKafkaCollection<KK, String> {
+	
+	protected static final String VALUE = "1";
+	
+	protected final CollectionSerde<KK, K> keySerde;
+	protected final CollectionSerde<String, String> valueSerde;
+	
+	public AbstractKafkaSet(CollectionConfig collectionConfig, CollectionSerde<KK, K> keySerde, CollectionSerde<String, String> valueSerde) {
+		super(collectionConfig,
+				new CollectionProducer<KK, String>(collectionConfig, keySerde.getRawSerializer(), valueSerde.getRawSerializer()),
+				new CollectionConsumer<KK, String>(collectionConfig, keySerde.getRawDeserializer(), valueSerde.getRawDeserializer()));
+		
+		this.keySerde = keySerde;
+		this.valueSerde = valueSerde;
+	}
+	
+	@Override
+	protected void onKafkaEvent(CollectionConsumerRecord<KK, String> collectionRecord) {
+		KK rawKey = collectionRecord.key();
+		String rawValue = collectionRecord.value();
+		
+		if (rawKey != null) {
+			if (rawValue != null) {
+				this.addLocal(this.keySerde.deserialize(rawKey));
+				// TODO update metrics
+			} else {
+				this.removeLocal(this.keySerde.deserialize(rawKey));
+				// TODO update metrics
+			}
 		}
-
-		@Override
-		protected void onKafkaEvent(CollectionConsumerRecord<KK,String> collectionRecord) {
-				KK rawKey = collectionRecord.key();
-				String rawValue = collectionRecord.value();
-
-				if (rawKey != null) {
-						if (rawValue != null) {
-								this.addLocal(this.keySerde.deserialize(rawKey));
-								//TODO update metrics
-						} else {
-								this.removeLocal(this.keySerde.deserialize(rawKey));
-								//TODO update metrics
-						}
+	}
+	
+	protected abstract boolean addLocal(K key);
+	protected abstract boolean removeLocal(K key);
+	protected abstract boolean containsLocal(K key);
+	
+	protected boolean collectionAdd(K k) {
+		if (k != null) {
+			if (CollectionConfig.COLLECTION_WRITE_MODE_BEHIND.equals(this.writeMode)) {
+				boolean added = this.addLocal(k);
+				if (added) {
+					super.sendKafkaEvent(this.keySerde.serialize(k), this.valueSerde.serialize(VALUE));
 				}
+				return added;
+			} else if (CollectionConfig.COLLECTION_WRITE_MODE_AHEAD.equals(this.writeMode)) {
+				boolean contains = this.containsLocal(k);
+				super.sendKafkaEvent(this.keySerde.serialize(k), VALUE);
+				return !contains;
+			} else {
+				throw new KafkaCollectionConfigurationException("The %s value %s is not supported by this collection", CollectionConfig.COLLECTION_WRITE_MODE, this.writeMode);
+			}
 		}
-
-		protected abstract boolean addLocal(K key);
-		protected abstract boolean removeLocal(K key);
-		protected abstract boolean containsLocal(K key);
-
-		protected boolean collectionAdd(K k) {
-				if (k != null) {
-						if (CollectionConfig.COLLECTION_WRITE_MODE_BEHIND.equals(this.writeMode)) {
-								boolean added = this.addLocal(k);
-								if (added) {
-										super.sendKafkaEvent(this.keySerde.serialize(k), this.valueSerde.serialize(VALUE));
-								}
-								return added;
-						} else if (CollectionConfig.COLLECTION_WRITE_MODE_AHEAD.equals(this.writeMode)) {
-								boolean contains = this.containsLocal(k);
-								super.sendKafkaEvent(this.keySerde.serialize(k), VALUE);
-								return !contains;
-						} else {
-								throw new KafkaCollectionConfigurationException("The %s value %s is not supported by this collection", CollectionConfig.COLLECTION_WRITE_MODE, this.writeMode);
-						}
+		return false;
+	}
+	
+	protected boolean collectionRemove(K k) {
+		if (k != null) {
+			if (CollectionConfig.COLLECTION_WRITE_MODE_BEHIND.equals(this.writeMode)) {
+				boolean remove = this.removeLocal(k);
+				if (remove) {
+					super.sendKafkaEvent(this.keySerde.serialize(k), null);
 				}
-				return false;
+				return remove;
+			} else if (CollectionConfig.COLLECTION_WRITE_MODE_AHEAD.equals(this.writeMode)) {
+				boolean contains = this.containsLocal(k);
+				super.sendKafkaEvent(this.keySerde.serialize(k), null);
+				return contains;
+			} else {
+				throw new KafkaCollectionConfigurationException("The %s value %s is not supported by this collection", CollectionConfig.COLLECTION_WRITE_MODE, this.writeMode);
+			}
 		}
-
-		protected boolean collectionRemove(K k) {
-				if (k != null) {
-						if (CollectionConfig.COLLECTION_WRITE_MODE_BEHIND.equals(this.writeMode)) {
-								boolean remove = this.removeLocal(k);
-								if (remove) {
-										super.sendKafkaEvent(this.keySerde.serialize(k), null);
-								}
-								return remove;
-						} else if (CollectionConfig.COLLECTION_WRITE_MODE_AHEAD.equals(this.writeMode)) {
-								boolean contains = this.containsLocal(k);
-								super.sendKafkaEvent(this.keySerde.serialize(k), null);
-								return contains;
-						} else {
-								throw new KafkaCollectionConfigurationException("The %s value %s is not supported by this collection", CollectionConfig.COLLECTION_WRITE_MODE, this.writeMode);
-						}
-				}
-				return false;
-		}
+		return false;
+	}
 }

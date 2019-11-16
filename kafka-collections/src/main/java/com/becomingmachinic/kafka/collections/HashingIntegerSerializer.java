@@ -17,17 +17,17 @@ package com.becomingmachinic.kafka.collections;
 import java.io.IOException;
 
 public class HashingIntegerSerializer implements HashingSerializer<Integer> {
-
-		@Override
-		public boolean serialize(DataStream out, Integer value) throws SerializationException {
-				if (value != null) {
-						try {
-								out.putInt(value);
-								return true;
-						} catch (IOException e) {
-								throw new SerializationException("Serializing value failed", e);
-						}
-				}
-				return false;
+	
+	@Override
+	public boolean serialize(DataStream out, Integer value) throws SerializationException {
+		if (value != null) {
+			try {
+				out.putInt(value);
+				return true;
+			} catch (IOException e) {
+				throw new SerializationException("Serializing value failed", e);
+			}
 		}
+		return false;
+	}
 }

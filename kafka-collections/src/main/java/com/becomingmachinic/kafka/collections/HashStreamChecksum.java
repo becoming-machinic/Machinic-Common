@@ -19,37 +19,38 @@ import java.nio.ByteBuffer;
 import java.util.zip.Checksum;
 
 public abstract class HashStreamChecksum extends HashStream {
-
-		private final Checksum checksum;
-		private Hash result = null;
-
-		public HashStreamChecksum() throws HashStreamException {
-				checksum = this.getChecksumInstance();
+	
+	private final Checksum checksum;
+	private Hash result = null;
+	
+	public HashStreamChecksum() throws HashStreamException {
+		checksum = this.getChecksumInstance();
+	}
+	
+	protected abstract Checksum getChecksumInstance();
+	
+	@Override
+	public void write(int b) throws IOException {
+		this.checksum.update((byte) b);
+	}
+	
+	@Override
+	public void write(byte[] b) throws IOException {
+		this.write(b, 0, b.length);
+	}
+	
+	@Override
+	public void write(byte[] b, int off, int len) throws IOException {
+		this.checksum.update(b, off, len);
+	}
+	
+	@Override
+	public Hash getHashes() {
+		if (this.result == null) {
+			// This will need to be changed when additional checksum implementations are added.
+			ByteBuffer buffer = ByteBuffer.allocate(4).putInt((int) this.checksum.getValue());
+			this.result = Hash.wrap(buffer.array());
 		}
-
-		protected abstract Checksum getChecksumInstance();
-
-		@Override
-		public void write(int b) throws IOException {
-				this.checksum.update((byte) b);
-		}
-
-		@Override
-		public void write(byte[] b) throws IOException {
-				this.write(b, 0, b.length);
-		}
-
-		@Override
-		public void write(byte[] b, int off, int len) throws IOException {
-				this.checksum.update(b, off, len);
-		}
-
-		public Hash getHashes() {
-				if (this.result == null) {
-						// This will need to be changed when additional checksum implementations are added.
-						ByteBuffer buffer = ByteBuffer.allocate(4).putInt((int)this.checksum.getValue());
-						this.result = Hash.wrap(buffer.array());
-				}
-				return this.result;
-		}
+		return this.result;
+	}
 }

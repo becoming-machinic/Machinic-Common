@@ -16,10 +16,9 @@ package com.becomingmachinic.kafka.collections;
 
 import java.util.Collection;
 import java.util.Map;
-import java.util.Set;
 import java.util.concurrent.TimeUnit;
 
-public interface KMap<K,V> extends Map<K,V>,AutoCloseable {
-		public boolean awaitWarmupComplete(long timeout, TimeUnit unit) throws InterruptedException;
-		public boolean containsAll(Collection<K> c);
+public interface KMap<K, V> extends Map<K, V>, AutoCloseable {
+	public boolean awaitWarmupComplete(long timeout, TimeUnit unit) throws InterruptedException;
+	public boolean containsAll(Collection<K> c);
 }

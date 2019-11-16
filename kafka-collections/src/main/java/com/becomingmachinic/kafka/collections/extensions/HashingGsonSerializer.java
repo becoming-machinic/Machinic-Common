@@ -20,33 +20,30 @@ import com.becomingmachinic.kafka.collections.SerializationException;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 
-import java.io.IOException;
-import java.lang.reflect.Type;
-
 public class HashingGsonSerializer<T> implements HashingSerializer<T> {
-		protected final Gson gson;
-
-		public HashingGsonSerializer(){
-				this(new GsonBuilder().create());
+	protected final Gson gson;
+	
+	public HashingGsonSerializer() {
+		this(new GsonBuilder().create());
+	}
+	
+	public HashingGsonSerializer(Gson gson) {
+		this.gson = gson;
+	}
+	
+	@Override
+	/**
+	 * Gson orders the json fields in the same order as the code, so code changes could change the message signature.
+	 */
+	public boolean serialize(DataStream out, T value) throws SerializationException {
+		if (value != null) {
+			try {
+				out.putString(gson.toJson(value));
+				return true;
+			} catch (Exception e) {
+				throw new SerializationException("Serializing value failed", e);
+			}
 		}
-
-		public HashingGsonSerializer(Gson gson) {
-				this.gson = gson;
-		}
-
-		@Override
-		/**
-		 * Gson orders the json fields in the same order as the code, so code changes could change the message signature.
-		 */
-		public boolean serialize(DataStream out, T value) throws SerializationException {
-				if (value != null) {
-						try {
-								out.putString(gson.toJson(value));
-								return true;
-						} catch (Exception e) {
-								throw new SerializationException("Serializing value failed", e);
-						}
-				}
-				return false;
-		}
+		return false;
+	}
 }

@@ -17,15 +17,15 @@ package com.becomingmachinic.kafka.collections;
 import java.io.IOException;
 import java.security.MessageDigest;
 
-public abstract class AbstractCryptographicHashStream extends HashStream{
-
+public abstract class AbstractCryptographicHashStream extends HashStream {
+	
 	private final MessageDigest digest;
 	private Hash result = null;
-
+	
 	protected AbstractCryptographicHashStream() throws HashStreamException {
 		this.digest = getDigestInstance();
 	}
-
+	
 	protected abstract MessageDigest getDigestInstance() throws HashStreamException;
 	
 	@Override
@@ -43,6 +43,7 @@ public abstract class AbstractCryptographicHashStream extends HashStream{
 		this.digest.update(b, off, len);
 	}
 	
+	@Override
 	public Hash getHashes() {
 		if (this.result == null) {
 			this.result = Hash.wrap(this.digest.digest());

@@ -18,51 +18,48 @@ import com.becomingmachinic.kafka.collections.CollectionStringSerde;
 import com.becomingmachinic.kafka.collections.SerializationException;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.google.gson.Gson;
-
-import java.lang.reflect.Type;
 
 public class JacksonToStringCollectionSerde<T> implements CollectionStringSerde<T> {
-
-		protected final ObjectMapper objectMapper;
-		protected final Class<T> classOfT;
-		protected final TypeReference<T> typeOfT;
-
-		public JacksonToStringCollectionSerde(ObjectMapper objectMapper, Class<T> classOfT) {
-				this.objectMapper = objectMapper;
-				this.classOfT = classOfT;
-				this.typeOfT = null;
+	
+	protected final ObjectMapper objectMapper;
+	protected final Class<T> classOfT;
+	protected final TypeReference<T> typeOfT;
+	
+	public JacksonToStringCollectionSerde(ObjectMapper objectMapper, Class<T> classOfT) {
+		this.objectMapper = objectMapper;
+		this.classOfT = classOfT;
+		this.typeOfT = null;
+	}
+	public JacksonToStringCollectionSerde(ObjectMapper objectMapper, TypeReference<T> typeOfT) {
+		this.objectMapper = objectMapper;
+		this.classOfT = null;
+		this.typeOfT = typeOfT;
+	}
+	
+	@Override
+	public String serialize(T value) throws SerializationException {
+		if (value != null) {
+			try {
+				return this.objectMapper.writeValueAsString(value);
+			} catch (Exception e) {
+				throw new SerializationException("Serialize value failed", e);
+			}
 		}
-		public JacksonToStringCollectionSerde(ObjectMapper objectMapper, TypeReference<T> typeOfT) {
-				this.objectMapper = objectMapper;
-				this.classOfT = null;
-				this.typeOfT = typeOfT;
-		}
-
-		@Override
-		public String serialize(T value) throws SerializationException {
-				if (value != null) {
-						try {
-								return this.objectMapper.writeValueAsString(value);
-						} catch (Exception e) {
-								throw new SerializationException("Serialize value failed", e);
-						}
+		return null;
+	}
+	@Override
+	public T deserialize(String raw) throws SerializationException {
+		if (raw != null) {
+			try {
+				if (this.classOfT != null) {
+					return this.objectMapper.readValue(raw, this.classOfT);
+				} else {
+					return this.objectMapper.readValue(raw, typeOfT);
 				}
-				return null;
+			} catch (Exception e) {
+				throw new SerializationException("Deserialize value failed", e);
+			}
 		}
-		@Override
-		public T deserialize(String raw) throws SerializationException {
-				if (raw != null) {
-						try {
-								if (this.classOfT != null) {
-										return this.objectMapper.readValue(raw, this.classOfT);
-								} else {
-										return this.objectMapper.readValue(raw, typeOfT);
-								}
-						} catch (Exception e) {
-								throw new SerializationException("Deserialize value failed", e);
-						}
-				}
-				return null;
-		}
+		return null;
+	}
 }

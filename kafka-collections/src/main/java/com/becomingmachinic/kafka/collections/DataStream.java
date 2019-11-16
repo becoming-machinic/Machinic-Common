@@ -24,10 +24,11 @@ import java.util.UUID;
 
 /**
  * Utility class which writes common types to the HashStream.
+ * 
  * @author Caleb Shingledecker
  *
  */
-public class DataStream implements AutoCloseable{
+public class DataStream implements AutoCloseable {
 	
 	protected ObjectOutputStream dataStream;
 	
@@ -114,6 +115,7 @@ public class DataStream implements AutoCloseable{
 	
 	/**
 	 * Writes object using java serialization
+	 * 
 	 * @param object
 	 * @return
 	 * @throws IOException
@@ -122,7 +124,7 @@ public class DataStream implements AutoCloseable{
 		this.dataStream.writeObject(object);
 		return this;
 	}
-
+	
 	@Override
 	public void close() throws Exception {
 		this.dataStream.flush();

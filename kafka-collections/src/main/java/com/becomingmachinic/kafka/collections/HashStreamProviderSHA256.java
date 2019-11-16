@@ -16,18 +16,19 @@ package com.becomingmachinic.kafka.collections;
 
 /**
  * The SHA256 hash provider hashes the input value using a standard SHA256 hash.
+ * 
  * @author caleb
  *
  */
-public class HashStreamProviderSHA256 implements HashStreamProvider{
-
+public class HashStreamProviderSHA256 implements HashStreamProvider {
+	
 	@Override
 	public HashStream createHashStream() throws HashStreamException {
 		return new HashStreamSHA256();
 	}
-
-		@Override
-		public int getNumberOfHashFunctions() {
-				return 8;
-		}
+	
+	@Override
+	public int getNumberOfHashFunctions() {
+		return 8;
+	}
 }

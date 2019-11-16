@@ -17,17 +17,17 @@ package com.becomingmachinic.kafka.collections;
 import java.io.IOException;
 
 public class HashingStringSerializer implements HashingSerializer<String> {
-
-		@Override
-		public boolean serialize(DataStream out, String value) throws SerializationException {
-				if (value != null) {
-						try {
-								out.putString(value);
-								return true;
-						} catch (IOException e) {
-								throw new SerializationException("Serializing value failed", e);
-						}
-				}
-				return false;
+	
+	@Override
+	public boolean serialize(DataStream out, String value) throws SerializationException {
+		if (value != null) {
+			try {
+				out.putString(value);
+				return true;
+			} catch (IOException e) {
+				throw new SerializationException("Serializing value failed", e);
+			}
 		}
+		return false;
+	}
 }

@@ -14,14 +14,14 @@
 
 package com.becomingmachinic.kafka.collections;
 
-public interface KafkaCollectionEventListener<K,V> {
-
-		public void onWarmupComplete(long warmupDuration);
-
-		public void onEvent(AbstractKafkaCollection<K, V> kafkaCollection, CollectionConsumerRecord<K, V> collectionRecord);
-
-		public void onException(KafkaCollectionException exception);
-
-		public void onShutdown();
-
+public interface KafkaCollectionEventListener<K, V> {
+	
+	public void onWarmupComplete(long warmupDuration);
+	
+	public void onEvent(AbstractKafkaCollection<K, V> kafkaCollection, CollectionConsumerRecord<K, V> collectionRecord);
+	
+	public void onException(KafkaCollectionException exception);
+	
+	public void onShutdown();
+	
 }

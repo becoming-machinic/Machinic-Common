@@ -17,52 +17,52 @@ package com.becomingmachinic.kafka.collections;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 
-public class CountDownLatchKafkaCollectionEventListener<K,V> implements KafkaCollectionEventListener<K,V> {
-
-		private final CountDownLatch latch;
-		private final boolean releaseOnShutdown;
-
-		public CountDownLatchKafkaCollectionEventListener(int eventCount) {
-				this(eventCount,true);
+public class CountDownLatchKafkaCollectionEventListener<K, V> implements KafkaCollectionEventListener<K, V> {
+	
+	private final CountDownLatch latch;
+	private final boolean releaseOnShutdown;
+	
+	public CountDownLatchKafkaCollectionEventListener(int eventCount) {
+		this(eventCount, true);
+	}
+	public CountDownLatchKafkaCollectionEventListener(int eventCount, boolean releaseOnShutdown) {
+		this.latch = new CountDownLatch(eventCount);
+		this.releaseOnShutdown = releaseOnShutdown;
+	}
+	
+	@Override
+	public void onWarmupComplete(long warmupDuration) {
+		
+	}
+	@Override
+	public void onEvent(AbstractKafkaCollection<K, V> kafkaCollection, CollectionConsumerRecord<K, V> collectionRecord) {
+		this.latch.countDown();
+		if (this.latch.getCount() <= 0) {
+			kafkaCollection.removeKafkaCollectionEventListener(this);
 		}
-		public CountDownLatchKafkaCollectionEventListener(int eventCount,boolean releaseOnShutdown) {
-				this.latch = new CountDownLatch(eventCount);
-				this.releaseOnShutdown = releaseOnShutdown;
-		}
-
-		@Override
-		public void onWarmupComplete(long warmupDuration) {
-
-		}
-		@Override
-		public void onEvent(AbstractKafkaCollection<K, V> kafkaCollection, CollectionConsumerRecord<K, V> collectionRecord) {
-				this.latch.countDown();
-				if (this.latch.getCount() <= 0) {
-						kafkaCollection.removeKafkaCollectionEventListener(this);
-				}
-		}
-		@Override
-		public void onException(KafkaCollectionException exception) {
-
-		}
-		@Override
-		public void onShutdown() {
-			if(this.releaseOnShutdown){
-					while(latch.getCount() > 0){
-							latch.countDown();
-					}
+	}
+	@Override
+	public void onException(KafkaCollectionException exception) {
+		
+	}
+	@Override
+	public void onShutdown() {
+		if (this.releaseOnShutdown) {
+			while (latch.getCount() > 0) {
+				latch.countDown();
 			}
 		}
-
-		public void await() throws InterruptedException {
-				latch.await();
-		}
-
-		public boolean await(long timeout, TimeUnit unit) throws InterruptedException {
-				return latch.await(timeout, unit);
-		}
-
-		public long getCount() {
-				return latch.getCount();
-		}
+	}
+	
+	public void await() throws InterruptedException {
+		latch.await();
+	}
+	
+	public boolean await(long timeout, TimeUnit unit) throws InterruptedException {
+		return latch.await(timeout, unit);
+	}
+	
+	public long getCount() {
+		return latch.getCount();
+	}
 }

@@ -17,15 +17,15 @@ package com.becomingmachinic.kafka.collections;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 
-public class HashStreamMD5 extends AbstractCryptographicHashStream{
-
-		@Override
-		protected MessageDigest getDigestInstance() throws HashStreamException {
-				try {
-						return MessageDigest.getInstance("MD5");
-				} catch (NoSuchAlgorithmException e) {
-						throw new HashStreamException("MD5 Algorithm Not Found.", e);
-				}
+public class HashStreamMD5 extends AbstractCryptographicHashStream {
+	
+	@Override
+	protected MessageDigest getDigestInstance() throws HashStreamException {
+		try {
+			return MessageDigest.getInstance("MD5");
+		} catch (NoSuchAlgorithmException e) {
+			throw new HashStreamException("MD5 Algorithm Not Found.", e);
 		}
-
+	}
+	
 }

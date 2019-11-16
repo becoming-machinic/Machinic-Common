@@ -14,7 +14,6 @@
 
 package com.becomingmachinic.kafka.collections;
 
-
 public interface GuavaHashing {
-
+	
 }

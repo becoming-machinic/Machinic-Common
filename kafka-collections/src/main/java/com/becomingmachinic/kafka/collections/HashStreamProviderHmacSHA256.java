@@ -15,28 +15,26 @@
 package com.becomingmachinic.kafka.collections;
 
 /**
- * The HMAC SHA256 hash stream hashes the data using the SHA256 HMAC (Keyed hash) to make it impossible for an attacker to predict a
- * resulting and therefore exploit a collision in the bloom filter. For this to be true the hashKey must remain unknown to the attacker.
- * A HMAC SHA256 has is more computationally expensive than a standard SHA256 hash so if this added security is not needed then the standard
- * SHA256 provider should be used.
+ * The HMAC SHA256 hash stream hashes the data using the SHA256 HMAC (Keyed hash) to make it impossible for an attacker to predict a resulting and therefore exploit a collision in the bloom filter. For this to be true the hashKey must remain unknown to the
+ * attacker. A HMAC SHA256 has is more computationally expensive than a standard SHA256 hash so if this added security is not needed then the standard SHA256 provider should be used.
  *
  * @author caleb
  */
 public class HashStreamProviderHmacSHA256 implements HashStreamProvider {
-
-		private final byte[] hashKey;
-
-		public HashStreamProviderHmacSHA256(byte[] hashKey) {
-				this.hashKey = hashKey;
-		}
-
-		@Override
-		public HashStream createHashStream() throws HashStreamException {
-				return new HashStreamHmacSHA256(this.hashKey);
-		}
-		@Override
-		public int getNumberOfHashFunctions() {
-				return 8;
-		}
-
+	
+	private final byte[] hashKey;
+	
+	public HashStreamProviderHmacSHA256(byte[] hashKey) {
+		this.hashKey = hashKey;
+	}
+	
+	@Override
+	public HashStream createHashStream() throws HashStreamException {
+		return new HashStreamHmacSHA256(this.hashKey);
+	}
+	@Override
+	public int getNumberOfHashFunctions() {
+		return 8;
+	}
+	
 }

@@ -14,15 +14,13 @@
 
 package com.becomingmachinic.kafka.collections;
 
-import java.io.IOException;
-import java.nio.ByteBuffer;
 import java.util.zip.CRC32;
 import java.util.zip.Checksum;
 
 public class HashStreamCRC32 extends HashStreamChecksum {
-
-		@Override
-		protected Checksum getChecksumInstance() {
-				return new CRC32();
-		}
+	
+	@Override
+	protected Checksum getChecksumInstance() {
+		return new CRC32();
+	}
 }

@@ -22,11 +22,11 @@ package com.becomingmachinic.kafka.collections;
 public interface HashStreamProvider {
 	
 	public HashStream createHashStream() throws HashStreamException;
-
-		/**
-		 *
-		 * @return The number of 32 bit integers that can be derived from this hash
-		 */
+	
+	/**
+	 *
+	 * @return The number of 32 bit integers that can be derived from this hash
+	 */
 	public int getNumberOfHashFunctions();
 	
 }

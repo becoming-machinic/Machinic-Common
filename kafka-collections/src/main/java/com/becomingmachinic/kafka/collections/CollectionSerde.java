@@ -25,41 +25,46 @@ import org.apache.kafka.common.serialization.Serializer;
  * @param <T>
  *          Collection object type
  */
-public interface CollectionSerde<S,T> {
-
-    /**
-     * Convert an instance of the collection type to the raw kafka type
-     * @param value Collection value
-     * @return Raw Kafka value
-     */
-    public S serialize(T value) throws SerializationException;
-
-    /**
-     * Convert a raw kafka value into the collection type
-     * @param raw
-     * @return
-     */
-    public T deserialize(S raw) throws SerializationException;
-
-    /**
-     * get an instance of the correct Kafka serializer
-     * @return
-     */
-    public Serializer<S> getRawSerializer();
-
-    /**
-     * Get an instance of the correct Kafka deserializer
-     * @return
-     */
-    public Deserializer<S> getRawDeserializer();
-
-    public static CollectionStringSerde<String> stringToString(){
-        return new StringToStringCollectionSarde();
-    }
-    public static CollectionByteArraySerde<byte[]> byteArrayToByteArray(){
-        return new ByteArrayToByteArrayCollectionSerde();
-    }
-    public static CollectionByteArraySerde<Hash> byteArrayToHash(){
-        return new ByteArrayToHashCollectionSerde();
-    }
+public interface CollectionSerde<S, T> {
+	
+	/**
+	 * Convert an instance of the collection type to the raw kafka type
+	 * 
+	 * @param value
+	 *          Collection value
+	 * @return Raw Kafka value
+	 */
+	public S serialize(T value) throws SerializationException;
+	
+	/**
+	 * Convert a raw kafka value into the collection type
+	 * 
+	 * @param raw
+	 * @return
+	 */
+	public T deserialize(S raw) throws SerializationException;
+	
+	/**
+	 * get an instance of the correct Kafka serializer
+	 * 
+	 * @return
+	 */
+	public Serializer<S> getRawSerializer();
+	
+	/**
+	 * Get an instance of the correct Kafka deserializer
+	 * 
+	 * @return
+	 */
+	public Deserializer<S> getRawDeserializer();
+	
+	public static CollectionStringSerde<String> stringToString() {
+		return new StringToStringCollectionSarde();
+	}
+	public static CollectionByteArraySerde<byte[]> byteArrayToByteArray() {
+		return new ByteArrayToByteArrayCollectionSerde();
+	}
+	public static CollectionByteArraySerde<Hash> byteArrayToHash() {
+		return new ByteArrayToHashCollectionSerde();
+	}
 }

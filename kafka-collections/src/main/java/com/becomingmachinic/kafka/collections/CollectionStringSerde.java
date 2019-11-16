@@ -19,21 +19,21 @@ import org.apache.kafka.common.serialization.Serializer;
 import org.apache.kafka.common.serialization.StringDeserializer;
 import org.apache.kafka.common.serialization.StringSerializer;
 
-public interface CollectionStringSerde<V> extends CollectionSerde<String,V> {
-
-    @Override
-    public String serialize(V value) throws SerializationException;
-
-    @Override
-    public V deserialize(String raw) throws SerializationException;
-
-    @Override
-    public default Serializer<String> getRawSerializer() {
-        return new StringSerializer();
-    }
-
-    @Override
-    public default Deserializer<String> getRawDeserializer() {
-        return new StringDeserializer();
-    }
+public interface CollectionStringSerde<V> extends CollectionSerde<String, V> {
+	
+	@Override
+	public String serialize(V value) throws SerializationException;
+	
+	@Override
+	public V deserialize(String raw) throws SerializationException;
+	
+	@Override
+	public default Serializer<String> getRawSerializer() {
+		return new StringSerializer();
+	}
+	
+	@Override
+	public default Deserializer<String> getRawDeserializer() {
+		return new StringDeserializer();
+	}
 }

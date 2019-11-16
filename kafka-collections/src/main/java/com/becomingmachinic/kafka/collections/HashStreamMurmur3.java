@@ -14,39 +14,40 @@
 
 package com.becomingmachinic.kafka.collections;
 
+import java.io.IOException;
+
 import com.google.common.hash.Hasher;
 import com.google.common.hash.Hashing;
 
-import java.io.IOException;
-
 public class HashStreamMurmur3 extends HashStream implements GuavaHashing {
-
-		private final Hasher hasher;
-		private Hash result = null;
-
-		public HashStreamMurmur3(int seed){
-				this.hasher = Hashing.murmur3_128(seed).newHasher();
+	
+	private final Hasher hasher;
+	private Hash result = null;
+	
+	public HashStreamMurmur3(int seed) {
+		this.hasher = Hashing.murmur3_128(seed).newHasher();
+	}
+	
+	@Override
+	public void write(int b) throws IOException {
+		this.write(new byte[] { (byte) b });
+	}
+	
+	@Override
+	public void write(byte[] b) throws IOException {
+		this.write(b, 0, b.length);
+	}
+	
+	@Override
+	public void write(byte[] b, int off, int len) throws IOException {
+		this.hasher.putBytes(b, off, len);
+	}
+	
+	@Override
+	public Hash getHashes() {
+		if (this.result == null) {
+			this.result = Hash.wrap(this.hasher.hash().asBytes());
 		}
-
-		@Override
-		public void write(int b) throws IOException {
-				this.write(new byte[]{ (byte) b });
-		}
-
-		@Override
-		public void write(byte[] b) throws IOException {
-				this.write(b,0,b.length);
-		}
-
-		@Override
-		public void write(byte[] b, int off, int len) throws IOException {
-				this.hasher.putBytes(b, off, len);
-		}
-
-		public Hash getHashes() {
-				if (this.result == null) {
-						this.result = Hash.wrap(this.hasher.hash().asBytes());
-				}
-				return this.result;
-		}
+		return this.result;
+	}
 }

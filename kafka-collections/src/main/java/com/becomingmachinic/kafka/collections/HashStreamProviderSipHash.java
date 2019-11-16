@@ -20,26 +20,26 @@ package com.becomingmachinic.kafka.collections;
  * @author caleb
  */
 public class HashStreamProviderSipHash implements HashStreamProvider {
-
-		private final long k0;
-		private final long k1;
-
-		public HashStreamProviderSipHash() {
-				this(0, 0);
-		}
-
-		public HashStreamProviderSipHash(long k0, long k1) {
-				this.k0 = k0;
-				this.k1 = k1;
-		}
-
-		@Override
-		public HashStream createHashStream() throws HashStreamException {
-				return new HashStreamSipHash(this.k0, this.k1);
-		}
-
-		@Override
-		public int getNumberOfHashFunctions() {
-				return 2;
-		}
+	
+	private final long k0;
+	private final long k1;
+	
+	public HashStreamProviderSipHash() {
+		this(0, 0);
+	}
+	
+	public HashStreamProviderSipHash(long k0, long k1) {
+		this.k0 = k0;
+		this.k1 = k1;
+	}
+	
+	@Override
+	public HashStream createHashStream() throws HashStreamException {
+		return new HashStreamSipHash(this.k0, this.k1);
+	}
+	
+	@Override
+	public int getNumberOfHashFunctions() {
+		return 2;
+	}
 }

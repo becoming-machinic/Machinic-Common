@@ -15,30 +15,29 @@
 package com.becomingmachinic.kafka.collections;
 
 /**
- * A Murmur3 has is less computationally expensive than a standard SHA256 hash.
- * It is also not a cryptographic hash function, so it should not be used where an attacker can gain benefit by predicting hash collisions
+ * A Murmur3 has is less computationally expensive than a standard SHA256 hash. It is also not a cryptographic hash function, so it should not be used where an attacker can gain benefit by predicting hash collisions
  *
  * @author caleb
  */
 public class HashStreamProviderMurmur3 implements HashStreamProvider {
-
-		private final int seed;
-
-		public HashStreamProviderMurmur3() {
-				this(0);
-		}
-
-		public HashStreamProviderMurmur3(int seed) {
-				this.seed = seed;
-		}
-
-		@Override
-		public HashStream createHashStream() throws HashStreamException {
-				return new HashStreamMurmur3(this.seed);
-		}
-
-		@Override
-		public int getNumberOfHashFunctions() {
-				return 4;
-		}
+	
+	private final int seed;
+	
+	public HashStreamProviderMurmur3() {
+		this(0);
+	}
+	
+	public HashStreamProviderMurmur3(int seed) {
+		this.seed = seed;
+	}
+	
+	@Override
+	public HashStream createHashStream() throws HashStreamException {
+		return new HashStreamMurmur3(this.seed);
+	}
+	
+	@Override
+	public int getNumberOfHashFunctions() {
+		return 4;
+	}
 }

@@ -15,15 +15,15 @@
 package com.becomingmachinic.kafka.collections;
 
 public interface HashingSerializer<T> {
-
-		public boolean serialize(DataStream out,T value) throws SerializationException;
-
-		public static HashingStringSerializer stringSerializer(){
-				return new HashingStringSerializer();
-		}
-
-		public static HashingIntegerSerializer integerSerializer(){
-				return new HashingIntegerSerializer();
-		}
-
+	
+	public boolean serialize(DataStream out, T value) throws SerializationException;
+	
+	public static HashingStringSerializer stringSerializer() {
+		return new HashingStringSerializer();
+	}
+	
+	public static HashingIntegerSerializer integerSerializer() {
+		return new HashingIntegerSerializer();
+	}
+	
 }

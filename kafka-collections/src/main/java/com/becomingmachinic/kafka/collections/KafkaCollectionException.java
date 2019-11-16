@@ -15,21 +15,22 @@
 package com.becomingmachinic.kafka.collections;
 
 public class KafkaCollectionException extends RuntimeException {
-
-		public KafkaCollectionException(String message) {
-				super(message);
-		}
-
-		public KafkaCollectionException(String message, String... vars) {
-				this(String.format(message, (Object[]) vars));
-		}
-
-		public KafkaCollectionException(String message, Throwable cause) {
-				super(String.format("%s. Caused by %s", message, cause.getMessage()), cause);
-		}
-
-		public KafkaCollectionException(String message, Throwable cause, String... vars) {
-				this(String.format(message, (Object[]) vars), cause);
-		}
-
+	private static final long serialVersionUID = 1L;
+	
+	public KafkaCollectionException(String message) {
+		super(message);
+	}
+	
+	public KafkaCollectionException(String message, String... vars) {
+		this(String.format(message, (Object[]) vars));
+	}
+	
+	public KafkaCollectionException(String message, Throwable cause) {
+		super(String.format("%s. Caused by %s", message, cause.getMessage()), cause);
+	}
+	
+	public KafkaCollectionException(String message, Throwable cause, String... vars) {
+		this(String.format(message, (Object[]) vars), cause);
+	}
+	
 }

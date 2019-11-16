@@ -16,18 +16,19 @@ package com.becomingmachinic.kafka.collections;
 
 /**
  * The SHA512 hash provider hashes the input value using a standard SHA512 hash.
+ * 
  * @author caleb
  *
  */
-public class HashStreamProviderSHA512 implements HashStreamProvider{
-
+public class HashStreamProviderSHA512 implements HashStreamProvider {
+	
 	@Override
 	public HashStream createHashStream() throws HashStreamException {
 		return new HashStreamSHA512();
 	}
-
-		@Override
-		public int getNumberOfHashFunctions() {
-				return 16;
-		}
+	
+	@Override
+	public int getNumberOfHashFunctions() {
+		return 16;
+	}
 }
