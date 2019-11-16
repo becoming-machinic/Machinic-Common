@@ -1,0 +1,13 @@
+dist: bionic
+addons:
+  apt:
+    sources:
+      - ppa: docker-bionic
+    packages:
+    - docker
+    
+language: java
+jdk: openjdk8
+
+sudo: false
+script: mvn clean verify -B
