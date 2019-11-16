@@ -7,7 +7,8 @@ addons:
     - docker
     
 language: java
-jdk: openjdk8
+jdk:
+  - openjdk11
 
 sudo: false
 script: mvn clean verify -B
