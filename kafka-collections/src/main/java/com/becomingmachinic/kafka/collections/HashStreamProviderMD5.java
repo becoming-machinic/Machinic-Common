@@ -15,7 +15,7 @@
 package com.becomingmachinic.kafka.collections;
 
 /**
- * The SHA256 hash provider hashes the input value using a standard SHA256 hash.
+ * The MD5 hash provider hashes the input value using a standard MD5 hash.
  * 
  * @author caleb
  *
@@ -23,7 +23,7 @@ package com.becomingmachinic.kafka.collections;
 public class HashStreamProviderMD5 implements HashStreamProvider {
 	
 	@Override
-	public HashStream createHashStream() throws HashStreamException {
+	public HashStream create() throws HashStreamException {
 		return new HashStreamMD5();
 	}
 	

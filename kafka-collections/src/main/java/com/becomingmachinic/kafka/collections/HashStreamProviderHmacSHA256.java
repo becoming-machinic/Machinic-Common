@@ -29,7 +29,7 @@ public class HashStreamProviderHmacSHA256 implements HashStreamProvider {
 	}
 	
 	@Override
-	public HashStream createHashStream() throws HashStreamException {
+	public HashStream create() throws HashStreamException {
 		return new HashStreamHmacSHA256(this.hashKey);
 	}
 	@Override

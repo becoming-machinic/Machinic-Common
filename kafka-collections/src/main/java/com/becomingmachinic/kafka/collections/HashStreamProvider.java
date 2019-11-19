@@ -21,7 +21,7 @@ package com.becomingmachinic.kafka.collections;
  */
 public interface HashStreamProvider {
 	
-	public HashStream createHashStream() throws HashStreamException;
+	public HashStream create() throws HashStreamException;
 	
 	/**
 	 *

@@ -128,6 +128,7 @@ public class KafkaHashSet<K> extends AbstractKafkaHashSet<K> implements KSet<K> 
 		// TODO this could likely be implemented
 		throw new UnsupportedOperationException("KafkaHashSet does not retain the elements, only their hashes");
 	}
+	@SuppressWarnings("unchecked")
 	@Override
 	public boolean removeAll(Collection<?> c) throws KafkaCollectionException {
 		if (this.getException() != null) {

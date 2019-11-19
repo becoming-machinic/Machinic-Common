@@ -33,7 +33,7 @@ public abstract class AbstractKafkaHashSet<K> extends AbstractKafkaSet<byte[], H
 	}
 	
 	protected Hash getHash(K value) throws HashStreamException {
-		try (HashStream hashStream = this.hashStreamProvider.createHashStream()) {
+		try (HashStream hashStream = this.hashStreamProvider.create()) {
 			try (DataStream dataStream = new DataStream(hashStream)) {
 				if (!this.hashingSerializer.serialize(dataStream, value)) {
 					return null;

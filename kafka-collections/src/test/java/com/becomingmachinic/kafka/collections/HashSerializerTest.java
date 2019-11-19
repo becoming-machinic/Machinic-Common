@@ -176,7 +176,7 @@ public class HashSerializerTest {
 		}
 		
 		public Hash getHash(T value) {
-			try (HashStream hashStream = provider.createHashStream()) {
+			try (HashStream hashStream = provider.create()) {
 				try (DataStream dataStream = new DataStream(hashStream)) {
 					if (!serializer.serialize(dataStream, value)) {
 						return null;
