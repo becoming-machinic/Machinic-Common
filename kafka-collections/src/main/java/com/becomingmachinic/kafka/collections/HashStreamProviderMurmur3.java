@@ -32,7 +32,7 @@ public class HashStreamProviderMurmur3 implements HashStreamProvider {
 	}
 	
 	@Override
-	public HashStream createHashStream() throws HashStreamException {
+	public HashStream create() throws HashStreamException {
 		return new HashStreamMurmur3(this.seed);
 	}
 	

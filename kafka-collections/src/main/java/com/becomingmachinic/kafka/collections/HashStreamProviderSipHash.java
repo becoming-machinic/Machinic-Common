@@ -34,7 +34,7 @@ public class HashStreamProviderSipHash implements HashStreamProvider {
 	}
 	
 	@Override
-	public HashStream createHashStream() throws HashStreamException {
+	public HashStream create() throws HashStreamException {
 		return new HashStreamSipHash(this.k0, this.k1);
 	}
 	

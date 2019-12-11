@@ -23,7 +23,7 @@ package com.becomingmachinic.kafka.collections;
 public class HashStreamProviderCRC32 implements HashStreamProvider {
 	
 	@Override
-	public HashStream createHashStream() throws HashStreamException {
+	public HashStream create() throws HashStreamException {
 		return new HashStreamCRC32();
 	}
 	
