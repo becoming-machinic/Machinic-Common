@@ -52,7 +52,7 @@ public abstract class AbstractKafkaCollection<K, V> implements AutoCloseable {
 		this.sendMode = collectionConfig.getSendMode();
 		this.sendTimeout = collectionConfig.getSendTimeoutMs();
 		this.writeMode = collectionConfig.getWriteMode();
-		collectionConfig.logConfig();
+	  collectionConfig.logConfig();
 		
 		checkConnectivity();
 		

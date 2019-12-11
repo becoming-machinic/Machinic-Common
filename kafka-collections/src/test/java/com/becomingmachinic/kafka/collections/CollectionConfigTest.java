@@ -97,7 +97,7 @@ public class CollectionConfigTest {
 		Assertions.assertEquals(888l, new CollectionConfig(this.configurationMap).getDeleteRetentionMs());
 		
 		this.configurationMap.put(CollectionConfig.COLLECTION_MAX_MESSAGE_BYTES, 4096);
-		Assertions.assertEquals(4096l, new CollectionConfig(this.configurationMap).getMaxMessageBytes());
+		Assertions.assertEquals(4096, new CollectionConfig(this.configurationMap).getMaxMessageBytes());
 		
 	}
 }

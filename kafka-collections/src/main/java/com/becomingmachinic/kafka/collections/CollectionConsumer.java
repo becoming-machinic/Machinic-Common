@@ -82,6 +82,8 @@ class CollectionConsumer<K, V> implements Runnable, AutoCloseable {
 			this.consumer.assign(topicPartitions);
 			if (CollectionConfig.COLLECTION_RESET_OFFSET_BEGINNING.equals(this.resetOffset)) {
 				this.consumer.seekToBeginning(topicPartitions);
+			} else if (CollectionConfig.COLLECTION_RESET_OFFSET_END.equals(this.resetOffset)) {
+				this.consumer.seekToEnd(topicPartitions);
 			}
 			
 		} catch (Exception e) {
