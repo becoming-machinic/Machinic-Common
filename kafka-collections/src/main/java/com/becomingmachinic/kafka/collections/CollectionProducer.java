@@ -60,7 +60,7 @@ class CollectionProducer<K, V> implements AutoCloseable {
 				this.producer.send(new ProducerRecord<K, V>(this.topic, null, sendTask.getKey(), sendTask.getValue(), headers), sendTask::onSendCompletion);
 				return true;
 			} catch (Exception e) {
-				logger.info(String.format("Collection %s producer send message failed", this.name), e);
+				logger.warn(String.format("Collection %s producer send message failed", this.name), e);
 				throw new KafkaCollectionException("Collection %s producer send message failed", e, this.name);
 			}
 		}
