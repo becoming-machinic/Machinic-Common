@@ -2,6 +2,7 @@ package com.becomingmachinic.kafka.collections;
 
 import static org.junit.jupiter.api.parallel.ExecutionMode.CONCURRENT;
 
+import java.time.Duration;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -85,19 +86,72 @@ public class CollectionConfigTest {
 		this.configurationMap.put(CollectionConfig.COLLECTION_PARTITIONS, "5");
 		Assertions.assertEquals(5, new CollectionConfig(this.configurationMap).getPartitions());
 		
+		Assertions.assertEquals(TopicConfig.CLEANUP_POLICY_COMPACT, new CollectionConfig(this.configurationMap).getCleanupPolicy());
 		this.configurationMap.put(CollectionConfig.COLLECTION_CLEANUP_POLICY, "compact");
 		Assertions.assertEquals(TopicConfig.CLEANUP_POLICY_COMPACT, new CollectionConfig(this.configurationMap).getCleanupPolicy());
 		this.configurationMap.put(CollectionConfig.COLLECTION_CLEANUP_POLICY, "delete");
 		Assertions.assertEquals(TopicConfig.CLEANUP_POLICY_DELETE, new CollectionConfig(this.configurationMap).getCleanupPolicy());
 		
+		Assertions.assertEquals(CollectionConfig.COLLECTION_RETENTION_MS_DEFAULT_VALUE, new CollectionConfig(this.configurationMap).getRetentionMs());
 		this.configurationMap.put(CollectionConfig.COLLECTION_RETENTION_MS, "999");
 		Assertions.assertEquals(999l, new CollectionConfig(this.configurationMap).getRetentionMs());
 		
 		this.configurationMap.put(CollectionConfig.COLLECTION_DELETE_RETENTION_MS, "888");
 		Assertions.assertEquals(888l, new CollectionConfig(this.configurationMap).getDeleteRetentionMs());
 		
-		this.configurationMap.put(CollectionConfig.COLLECTION_MAX_MESSAGE_BYTES, 4096);
-		Assertions.assertEquals(4096, new CollectionConfig(this.configurationMap).getMaxMessageBytes());
+		Assertions.assertEquals(null, new CollectionConfig(this.configurationMap).getMaxMessageBytes());
 		
+		this.configurationMap.put(CollectionConfig.COLLECTION_MAX_MESSAGE_BYTES, 1048576);
+		Assertions.assertEquals(1048576, new CollectionConfig(this.configurationMap).getMaxMessageBytes());
+		
+	}
+	
+	@Test
+	void createConfigTest() {
+		configurationMap.put(CollectionConfig.COLLECTION_NAME, "createTopicTest");
+		Assertions.assertEquals(true, new CollectionConfig(this.configurationMap).getCreateTopic());
+		
+		this.configurationMap.put(CollectionConfig.COLLECTION_MAX_POLL_INTERVAL_MS, "1009");
+		Assertions.assertEquals(Duration.ofMillis(1009), new CollectionConfig(this.configurationMap).getMaxPollIntervalDuration());
+		
+		this.configurationMap.put(CollectionConfig.COLLECTION_WARMUP_POLL_INTERVAL_MS, "1011");
+		Assertions.assertEquals(Duration.ofMillis(1011), new CollectionConfig(this.configurationMap).getWarmupPollIntervalDuration());
+		
+		this.configurationMap.put(CollectionConfig.COLLECTION_SEND_TIMEOUT_MS, "1012");
+		Assertions.assertEquals(1012l, new CollectionConfig(this.configurationMap).getSendTimeoutMs());
+		
+		this.configurationMap.put(CollectionConfig.COLLECTION_READONLY, "true");
+		Assertions.assertEquals(true, new CollectionConfig(this.configurationMap).isReadOnly());
+		
+		this.configurationMap.put(CollectionConfig.COLLECTION_READONLY, "false");
+		Assertions.assertEquals(false, new CollectionConfig(this.configurationMap).isReadOnly());
+		
+		this.configurationMap.put(CollectionConfig.COLLECTION_SEND_MODE, CollectionConfig.COLLECTION_SEND_MODE_ASYNCHRONOUS);
+		Assertions.assertEquals(CollectionConfig.COLLECTION_SEND_MODE_ASYNCHRONOUS, new CollectionConfig(this.configurationMap).getSendMode());
+		
+		this.configurationMap.put(CollectionConfig.COLLECTION_SEND_MODE, CollectionConfig.COLLECTION_SEND_MODE_SYNCHRONOUS);
+		Assertions.assertEquals(CollectionConfig.COLLECTION_SEND_MODE_SYNCHRONOUS, new CollectionConfig(this.configurationMap).getSendMode());
+		
+		this.configurationMap.put(CollectionConfig.COLLECTION_WRITE_MODE, CollectionConfig.COLLECTION_WRITE_MODE_BEHIND);
+		Assertions.assertEquals(CollectionConfig.COLLECTION_WRITE_MODE_BEHIND, new CollectionConfig(this.configurationMap).getWriteMode());
+		
+		this.configurationMap.put(CollectionConfig.COLLECTION_WRITE_MODE, CollectionConfig.COLLECTION_WRITE_MODE_AHEAD);
+		Assertions.assertEquals(CollectionConfig.COLLECTION_WRITE_MODE_AHEAD, new CollectionConfig(this.configurationMap).getWriteMode());
+		
+		Assertions.assertEquals(false, new CollectionConfig(this.configurationMap).isSkipConnectivityCheck());
+		
+		this.configurationMap.put(CollectionConfig.COLLECTION_SKIP_CONNECTIVITY_CHECK, true);
+		Assertions.assertEquals(true, new CollectionConfig(this.configurationMap).isSkipConnectivityCheck());
+		
+		this.configurationMap.put(CollectionConfig.COLLECTION_SKIP_CONNECTIVITY_CHECK, false);
+		Assertions.assertEquals(false, new CollectionConfig(this.configurationMap).isSkipConnectivityCheck());
+		
+		Assertions.assertEquals("none", new CollectionConfig(this.configurationMap).isResetOffset());
+		
+		this.configurationMap.put(CollectionConfig.COLLECTION_RESET_OFFSET, CollectionConfig.COLLECTION_RESET_OFFSET_BEGINNING);
+		Assertions.assertEquals(CollectionConfig.COLLECTION_RESET_OFFSET_BEGINNING, new CollectionConfig(this.configurationMap).isResetOffset());
+		
+		this.configurationMap.put(CollectionConfig.COLLECTION_RESET_OFFSET, CollectionConfig.COLLECTION_RESET_OFFSET_END);
+		Assertions.assertEquals(CollectionConfig.COLLECTION_RESET_OFFSET_END, new CollectionConfig(this.configurationMap).isResetOffset());
 	}
 }

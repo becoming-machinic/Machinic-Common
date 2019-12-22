@@ -34,7 +34,7 @@ public class KafkaMap<K, V, KK, KV> extends AbstractKafkaCollection<KK, KV> impl
 	
 	public KafkaMap(ConcurrentMap<K, V> delegateMap, CollectionConfig collectionConfig, CollectionSerde<KK, K> keySerde, CollectionSerde<KV, V> valueSerde) {
 		super(collectionConfig,
-				new CollectionProducer<KK, KV>(collectionConfig, keySerde.getRawSerializer(), valueSerde.getRawSerializer()),
+				(!collectionConfig.isReadOnly() ? new CollectionProducer<KK, KV>(collectionConfig, keySerde.getRawSerializer(), valueSerde.getRawSerializer()) : null),
 				new CollectionConsumer<KK, KV>(collectionConfig, keySerde.getRawDeserializer(), valueSerde.getRawDeserializer()));
 		
 		this.delegateMap = delegateMap;
@@ -126,17 +126,15 @@ public class KafkaMap<K, V, KK, KV> extends AbstractKafkaCollection<KK, KV> impl
 	
 	@Override
 	public V put(K key, V value) {
-		if (this.getException() != null) {
-			throw getException();
-		}
+		checkErrors();
+		
 		return this.updateCollection(key, value);
 	}
 	
 	@Override
 	public void putAll(Map<? extends K, ? extends V> m) {
-		if (this.getException() != null) {
-			throw getException();
-		}
+		checkErrors();
+		
 		for (Entry<? extends K, ? extends V> entry : m.entrySet()) {
 			this.updateCollection(entry.getKey(), entry.getValue());
 		}
@@ -145,9 +143,8 @@ public class KafkaMap<K, V, KK, KV> extends AbstractKafkaCollection<KK, KV> impl
 	@SuppressWarnings("unchecked")
 	@Override
 	public V remove(Object key) {
-		if (this.getException() != null) {
-			throw getException();
-		}
+		checkErrors();
+		
 		try {
 			return this.updateCollection((K) key, null);
 		} catch (ClassCastException e) {
@@ -167,9 +164,7 @@ public class KafkaMap<K, V, KK, KV> extends AbstractKafkaCollection<KK, KV> impl
 	
 	@Override
 	public void clear() {
-		if (this.getException() != null) {
-			throw this.getException();
-		}
+		checkErrors();
 		
 		Iterator<K> it = this.delegateMap.keySet().iterator();
 		while (it.hasNext()) {

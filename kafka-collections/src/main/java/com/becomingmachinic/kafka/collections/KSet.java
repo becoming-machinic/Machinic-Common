@@ -19,4 +19,5 @@ import java.util.concurrent.TimeUnit;
 
 public interface KSet<E> extends Set<E>, AutoCloseable {
 	public boolean awaitWarmupComplete(long timeout, TimeUnit unit) throws InterruptedException;
+	public boolean isReadOnly();
 }

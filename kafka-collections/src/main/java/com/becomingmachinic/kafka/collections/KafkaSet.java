@@ -89,10 +89,8 @@ public class KafkaSet<KK, K> extends AbstractKafkaSet<KK, K> implements KSet<K> 
 	}
 	@Override
 	public boolean add(K k) {
-		KafkaCollectionException exp = this.getException();
-		if (exp != null) {
-			throw exp;
-		}
+		checkErrors();
+		
 		if (k != null) {
 			return this.collectionAdd(k);
 		}
@@ -101,10 +99,8 @@ public class KafkaSet<KK, K> extends AbstractKafkaSet<KK, K> implements KSet<K> 
 	@SuppressWarnings("unchecked")
 	@Override
 	public boolean remove(Object o) {
-		KafkaCollectionException exp = this.getException();
-		if (exp != null) {
-			throw exp;
-		}
+		checkErrors();
+		
 		try {
 			return this.collectionRemove((K) o);
 		} catch (ClassCastException e) {
@@ -117,9 +113,7 @@ public class KafkaSet<KK, K> extends AbstractKafkaSet<KK, K> implements KSet<K> 
 	}
 	@Override
 	public boolean addAll(Collection<? extends K> c) {
-		if (this.getException() != null) {
-			throw this.getException();
-		}
+		checkErrors();
 		
 		boolean changed = false;
 		for (K key : c) {
@@ -131,9 +125,7 @@ public class KafkaSet<KK, K> extends AbstractKafkaSet<KK, K> implements KSet<K> 
 	}
 	@Override
 	public boolean retainAll(Collection<?> c) {
-		if (this.getException() != null) {
-			throw this.getException();
-		}
+		checkErrors();
 		
 		boolean changed = false;
 		Iterator<K> it = this.delegateSet.iterator();
@@ -149,9 +141,7 @@ public class KafkaSet<KK, K> extends AbstractKafkaSet<KK, K> implements KSet<K> 
 	@SuppressWarnings("unchecked")
 	@Override
 	public boolean removeAll(Collection<?> c) {
-		if (this.getException() != null) {
-			throw this.getException();
-		}
+		checkErrors();
 		
 		boolean changed = false;
 		Iterator<?> it = c.iterator();
@@ -167,9 +157,7 @@ public class KafkaSet<KK, K> extends AbstractKafkaSet<KK, K> implements KSet<K> 
 	}
 	@Override
 	public void clear() {
-		if (this.getException() != null) {
-			throw this.getException();
-		}
+		checkErrors();
 		
 		Iterator<K> it = this.delegateSet.iterator();
 		while (it.hasNext()) {

@@ -23,7 +23,7 @@ public abstract class AbstractKafkaSet<KK, K> extends AbstractKafkaCollection<KK
 	
 	public AbstractKafkaSet(CollectionConfig collectionConfig, CollectionSerde<KK, K> keySerde, CollectionSerde<String, String> valueSerde) {
 		super(collectionConfig,
-				new CollectionProducer<KK, String>(collectionConfig, keySerde.getRawSerializer(), valueSerde.getRawSerializer()),
+				(!collectionConfig.isReadOnly() ? new CollectionProducer<KK, String>(collectionConfig, keySerde.getRawSerializer(), valueSerde.getRawSerializer()) : null),
 				new CollectionConsumer<KK, String>(collectionConfig, keySerde.getRawDeserializer(), valueSerde.getRawDeserializer()));
 		
 		this.keySerde = keySerde;

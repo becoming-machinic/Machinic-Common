@@ -59,10 +59,8 @@ public class KafkaBloomFilter<K> extends AbstractKafkaHashSet<K> implements KBlo
 	
 	@Override
 	public boolean add(K value) throws KafkaCollectionException {
-		KafkaCollectionException exp = this.getException();
-		if (exp != null) {
-			throw exp;
-		}
+		checkErrors();
+		
 		if (value != null) {
 			return this.addKey(value);
 		}
@@ -70,9 +68,7 @@ public class KafkaBloomFilter<K> extends AbstractKafkaHashSet<K> implements KBlo
 	}
 	@Override
 	public boolean addAll(Collection<K> values) throws KafkaCollectionException {
-		if (this.getException() != null) {
-			throw this.getException();
-		}
+		checkErrors();
 		
 		boolean changed = false;
 		for (K key : values) {

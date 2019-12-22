@@ -14,15 +14,15 @@
 
 package com.becomingmachinic.kafka.collections;
 
+import org.apache.kafka.clients.consumer.ConsumerRecord;
+import org.apache.kafka.clients.consumer.ConsumerRecords;
+
 import java.nio.ByteBuffer;
 import java.security.SecureRandom;
 import java.util.concurrent.ConcurrentSkipListSet;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
-
-import org.apache.kafka.clients.consumer.ConsumerRecord;
-import org.apache.kafka.clients.consumer.ConsumerRecords;
 
 public abstract class AbstractKafkaCollection<K, V> implements AutoCloseable {
 	
@@ -35,6 +35,7 @@ public abstract class AbstractKafkaCollection<K, V> implements AutoCloseable {
 	protected final String sendMode;
 	protected final long sendTimeout;
 	protected final String writeMode;
+	protected final boolean readOnly;
 	protected final ConcurrentSkipListSet<SendTask<K, V>> sendTasks = new ConcurrentSkipListSet<>();
 	protected final CopyOnWriteArrayList<KafkaCollectionEventListener<K, V>> listeners = new CopyOnWriteArrayList<>();
 	
@@ -52,7 +53,8 @@ public abstract class AbstractKafkaCollection<K, V> implements AutoCloseable {
 		this.sendMode = collectionConfig.getSendMode();
 		this.sendTimeout = collectionConfig.getSendTimeoutMs();
 		this.writeMode = collectionConfig.getWriteMode();
-	  collectionConfig.logConfig();
+		this.readOnly = collectionConfig.isReadOnly();
+		collectionConfig.logConfig();
 		
 		checkConnectivity();
 		
@@ -60,24 +62,26 @@ public abstract class AbstractKafkaCollection<K, V> implements AutoCloseable {
 	}
 	
 	protected void sendKafkaEvent(K key, V value) {
-		if (CollectionConfig.COLLECTION_SEND_MODE_SYNCHRONOUS.equals(this.sendMode)) {
-			try {
-				SendTask<K, V> sendTask = new SendTask<>(this.instanceId, key, value);
-				this.sendTasks.add(sendTask);
-				if (this.producer.send(sendTask)) {
-					if (!sendTask.await(this.sendTimeout, TimeUnit.MILLISECONDS)) {
-						throw new SendTimeoutException("Collection %s send message timeout %s expired on kafka key %s", this.name, Long.toString(this.sendTimeout), String.valueOf(key));
+		if (this.producer != null) {
+			if (CollectionConfig.COLLECTION_SEND_MODE_SYNCHRONOUS.equals(this.sendMode)) {
+				try {
+					SendTask<K, V> sendTask = new SendTask<>(this.instanceId, key, value);
+					this.sendTasks.add(sendTask);
+					if (this.producer.send(sendTask)) {
+						if (!sendTask.await(this.sendTimeout, TimeUnit.MILLISECONDS)) {
+							throw new SendTimeoutException("Collection %s send message timeout %s expired on kafka key %s", this.name, Long.toString(this.sendTimeout), String.valueOf(key));
+						}
+					} else {
+						this.sendTasks.remove(sendTask);
 					}
-				} else {
-					this.sendTasks.remove(sendTask);
+				} catch (InterruptedException e) {
+					throw new SendTimeoutException("Collection %s send message was interrupted", this.name);
 				}
-			} catch (InterruptedException e) {
-				throw new SendTimeoutException("Collection %s send message was interrupted", this.name);
+			} else if (CollectionConfig.COLLECTION_SEND_MODE_ASYNCHRONOUS.equals(this.sendMode)) {
+				this.producer.sendAsync(this.instanceId, key, value);
+			} else {
+				throw new KafkaCollectionConfigurationException("The %s value %s is not supported by this collection", CollectionConfig.COLLECTION_SEND_MODE, this.sendMode);
 			}
-		} else if (CollectionConfig.COLLECTION_SEND_MODE_ASYNCHRONOUS.equals(this.sendMode)) {
-			this.producer.sendAsync(this.instanceId, key, value);
-		} else {
-			throw new KafkaCollectionConfigurationException("The %s value %s is not supported by this collection", CollectionConfig.COLLECTION_SEND_MODE, this.sendMode);
 		}
 	}
 	
@@ -90,6 +94,9 @@ public abstract class AbstractKafkaCollection<K, V> implements AutoCloseable {
 	public KafkaCollectionException getException() {
 		return this.exception;
 	}
+	public boolean isReadOnly(){
+		return this.readOnly;
+	}
 	
 	protected void checkConnectivity() {
 		if (!collectionConfig.isSkipConnectivityCheck()) {
@@ -100,6 +107,15 @@ public abstract class AbstractKafkaCollection<K, V> implements AutoCloseable {
 		Thread worker = new Thread(this.consumer);
 		worker.setDaemon(true);
 		worker.start();
+	}
+	protected void checkErrors(){
+		KafkaCollectionException exp = this.getException();
+		if (exp != null) {
+			throw exp;
+		}
+		if(this.readOnly){
+			throw new UnsupportedOperationException("Collection is readonly");
+		}
 	}
 	
 	protected abstract void onKafkaEvent(CollectionConsumerRecord<K, V> collectionRecord);
@@ -143,13 +159,10 @@ public abstract class AbstractKafkaCollection<K, V> implements AutoCloseable {
 	/**
 	 * Wait for the collection has been backfilled with the data that exists on the kafka topic at the time that the collection is created.
 	 *
-	 * @param timeout
-	 *          the maximum time to wait
-	 * @param unit
-	 *          the time unit of the {@code timeout} argument
+	 * @param timeout the maximum time to wait
+	 * @param unit    the time unit of the {@code timeout} argument
 	 * @return {@code true} if the backfill completes and {@code false} if the waiting time elapsed before the backfill completes
-	 * @throws InterruptedException
-	 *           if the current thread is interrupted while waiting
+	 * @throws InterruptedException if the current thread is interrupted while waiting
 	 */
 	public boolean awaitWarmupComplete(long timeout, TimeUnit unit) throws InterruptedException {
 		return this.warmedLatch.await(timeout, unit);

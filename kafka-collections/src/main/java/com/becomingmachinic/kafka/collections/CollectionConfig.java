@@ -109,6 +109,8 @@ public class CollectionConfig {
 	public static Long COLLECTION_MAX_POLL_INTERVAL_MS_DEFAULT_VALUE = 60000l;
 	public static Long COLLECTION_WARMUP_POLL_INTERVAL_MS_DEFAULT_VALUE = 5000l;
 	public static Long COLLECTION_SEND_TIMEOUT_MS_DEFAULT_VALUE = 30000l;
+	public static Long COLLECTION_RETENTION_MS_DEFAULT_VALUE = 7 * 24 * 3600 * 1000l;
+	public static Long COLLECTION_DELETE_RETENTION_MS_DEFAULT_VALUE = 1 * 24 * 3600 * 1000l;
 	public static Boolean COLLECTION_READONLY_DEFAULT_VALUE = false;
 	public static String COLLECTION_SEND_MODE_SYNCHRONOUS = "synchronous";
 	public static String COLLECTION_SEND_MODE_ASYNCHRONOUS = "asynchronous";
@@ -149,8 +151,8 @@ public class CollectionConfig {
 				new BooleanConfigKey(COLLECTION_SKIP_CONNECTIVITY_CHECK,
 						Boolean.FALSE),
 				new StringEnumerationConfigKey(COLLECTION_RESET_OFFSET,
-						"",
-						Arrays.asList("", COLLECTION_RESET_OFFSET_BEGINNING, COLLECTION_RESET_OFFSET_END)),
+						"none",
+						Arrays.asList("none", COLLECTION_RESET_OFFSET_BEGINNING, COLLECTION_RESET_OFFSET_END)),
 				new BooleanConfigKey(COLLECTION_CREATE_TOPIC,
 						true),
 				new IntegerRangeConfigKey(COLLECTION_REPLICATION_FACTOR,
@@ -165,15 +167,15 @@ public class CollectionConfig {
 						TopicConfig.CLEANUP_POLICY_COMPACT,
 						Arrays.asList(TopicConfig.CLEANUP_POLICY_COMPACT, TopicConfig.CLEANUP_POLICY_DELETE)),
 				new LongRangeConfigKey(COLLECTION_RETENTION_MS,
-						7 * 24 * 3600 * 1000l,
-						1l,
+						COLLECTION_RETENTION_MS_DEFAULT_VALUE,
+						-1l,
 						null),
 				new IntegerRangeConfigKey(COLLECTION_MAX_MESSAGE_BYTES,
 						IntegerRangeConfigKey.NO_DEFAULT,
 						1,
 						null),
 				new LongRangeConfigKey(COLLECTION_DELETE_RETENTION_MS,
-						LongRangeConfigKey.NO_DEFAULT,
+						COLLECTION_DELETE_RETENTION_MS_DEFAULT_VALUE,
 						1l,
 						null));
 	}

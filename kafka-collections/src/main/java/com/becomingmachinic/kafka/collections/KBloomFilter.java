@@ -111,4 +111,6 @@ public interface KBloomFilter<T> extends AutoCloseable {
 	 * @return
 	 */
 	public double getExpectedFalsePositiveProbability();
+	
+	public boolean isReadOnly();
 }

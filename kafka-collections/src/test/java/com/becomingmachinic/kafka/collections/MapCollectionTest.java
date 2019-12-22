@@ -1,21 +1,12 @@
 package com.becomingmachinic.kafka.collections;
 
-import static org.junit.jupiter.api.parallel.ExecutionMode.CONCURRENT;
-
-import java.time.Duration;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.concurrent.TimeUnit;
-
+import ch.qos.logback.classic.spi.ILoggingEvent;
+import com.becomingmachinic.kafka.collections.utils.LogbackTestAppender;
+import com.becomingmachinic.kafka.collections.utils.RunnableTest;
 import org.apache.kafka.clients.CommonClientConfigs;
 import org.apache.kafka.clients.consumer.ConsumerConfig;
 import org.junit.ClassRule;
-import org.junit.jupiter.api.AfterAll;
-import org.junit.jupiter.api.Assertions;
-import org.junit.jupiter.api.BeforeAll;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.*;
 import org.junit.jupiter.api.parallel.Execution;
 import org.mapdb.DB;
 import org.mapdb.DBMaker;
@@ -23,10 +14,13 @@ import org.mapdb.HTreeMap;
 import org.mapdb.Serializer;
 import org.testcontainers.containers.KafkaContainer;
 
-import com.becomingmachinic.kafka.collections.utils.LogbackTestAppender;
-import com.becomingmachinic.kafka.collections.utils.RunnableTest;
+import java.time.Duration;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.concurrent.TimeUnit;
 
-import ch.qos.logback.classic.spi.ILoggingEvent;
+import static org.junit.jupiter.api.parallel.ExecutionMode.CONCURRENT;
 
 @Execution(CONCURRENT)
 public class MapCollectionTest {
@@ -487,5 +481,50 @@ public class MapCollectionTest {
 			Assertions.assertEquals("The configuration 'unused.property' was supplied but isn't a known config.", event.getFormattedMessage());
 		}
 		Assertions.assertEquals(4, configErrors.size());
+	}
+	
+	@Test
+	void mapReadonlyTest() throws Exception {
+		configurationMap.put(CollectionConfig.COLLECTION_NAME, "mapReadonlyTest");
+		configurationMap.put(CollectionConfig.COLLECTION_SEND_MODE, CollectionConfig.COLLECTION_SEND_MODE_ASYNCHRONOUS);
+		configurationMap.put(CollectionConfig.COLLECTION_WRITE_MODE, CollectionConfig.COLLECTION_WRITE_MODE_BEHIND);
+		
+		try (KMap<String, String> map1 = new KafkaMap<String, String, String, String>(new CollectionConfig(configurationMap), CollectionSerde.stringToString(), CollectionSerde.stringToString())) {
+			map1.awaitWarmupComplete(30, TimeUnit.SECONDS);
+			Assertions.assertEquals(0, map1.size());
+			
+			Map<String, String> tempMap = new HashMap<>();
+			for (int i = 0; i < 512; i++) {
+				tempMap.put(Integer.toString(i), String.format("Test_%s", i));
+			}
+			map1.putAll(tempMap);
+			
+			Assertions.assertEquals(512, map1.size());
+			Assertions.assertFalse(map1.isReadOnly());
+			
+			configurationMap.put(CollectionConfig.COLLECTION_READONLY, true);
+			try (KMap<String, String> map2 = new KafkaMap<String, String, String, String>(new CollectionConfig(configurationMap), CollectionSerde.stringToString(), CollectionSerde.stringToString())) {
+				map2.awaitWarmupComplete(30, TimeUnit.SECONDS);
+				
+				Assertions.assertEquals(512, map2.size());
+				
+				Assertions.assertThrows(UnsupportedOperationException.class, () -> {
+					map2.put("key", "value");
+				});
+				
+				Assertions.assertThrows(UnsupportedOperationException.class, () -> {
+					map2.remove("key");
+				});
+				
+				Assertions.assertThrows(UnsupportedOperationException.class, () -> {
+					map2.clear();
+				});
+				
+				Assertions.assertTrue(map2.isReadOnly());
+				Assertions.assertEquals(512, map2.size());
+			}
+			
+			Assertions.assertEquals(512, map1.size());
+		}
 	}
 }

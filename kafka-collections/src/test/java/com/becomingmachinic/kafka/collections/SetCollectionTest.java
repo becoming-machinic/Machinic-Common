@@ -242,13 +242,13 @@ public class SetCollectionTest {
 				tempList.add(Integer.toString(i));
 			}
 			Assertions.assertTrue(set.addAll(tempList));
-			
 			Assertions.assertEquals(512, set.size());
 			
 			for (int i = 0; i < 512; i++) {
 				Assertions.assertTrue(set.contains(Integer.toString(i)));
 			}
 			
+			Assertions.assertTrue(set.containsAll(tempList));
 			Assertions.assertTrue(set.removeAll(tempList));
 			Thread.sleep(2000);
 			Assertions.assertTrue(set.isEmpty());
@@ -260,6 +260,59 @@ public class SetCollectionTest {
 			Assertions.assertEquals(0, set.toArray().length);
 			Assertions.assertFalse(set.remove("non matching value"));
 			Assertions.assertFalse(set.remove(1));
+		}
+	}
+	
+	@Test
+	void setReadonlyTest() throws Exception {
+		configurationMap.put(CollectionConfig.COLLECTION_NAME, "setReadonlyTest");
+		configurationMap.put(CollectionConfig.COLLECTION_WRITE_MODE, CollectionConfig.COLLECTION_WRITE_MODE_BEHIND);
+		configurationMap.put(CollectionConfig.COLLECTION_SEND_MODE, CollectionConfig.COLLECTION_SEND_MODE_ASYNCHRONOUS);
+		
+		try (KSet<String> set1 = new KafkaSet<String, String>(new CollectionConfig(configurationMap), CollectionSerde.stringToString())) {
+			set1.awaitWarmupComplete(30, TimeUnit.SECONDS);
+			Assertions.assertEquals(0, set1.size());
+			
+			List<String> tempList = new ArrayList<>();
+			for (int i = 0; i < 512; i++) {
+				set1.add(Integer.toString(i));
+			}
+			Assertions.assertEquals(512, set1.size());
+			Assertions.assertFalse(set1.isReadOnly());
+			
+			configurationMap.put(CollectionConfig.COLLECTION_READONLY,true);
+			try (KSet<String> set2 = new KafkaSet<String, String>(new CollectionConfig(configurationMap), CollectionSerde.stringToString())) {
+				set2.awaitWarmupComplete(30, TimeUnit.SECONDS);
+				Assertions.assertEquals(512, set2.size());
+				
+				Assertions.assertThrows(UnsupportedOperationException.class, () -> {
+					set2.add("key");
+				});
+				
+				Assertions.assertThrows(UnsupportedOperationException.class, () -> {
+					set2.addAll(Arrays.asList("key"));
+				});
+				
+				Assertions.assertThrows(UnsupportedOperationException.class, () -> {
+					set2.remove("key");
+				});
+				
+				Assertions.assertThrows(UnsupportedOperationException.class, () -> {
+					set2.removeAll(Arrays.asList("key"));
+				});
+				
+				Assertions.assertThrows(UnsupportedOperationException.class, () -> {
+					set2.retainAll(Arrays.asList("key"));
+				});
+				
+				Assertions.assertThrows(UnsupportedOperationException.class, () -> {
+					set2.clear();
+				});
+				
+				Assertions.assertEquals(512, set2.size());
+				Assertions.assertTrue(set2.isReadOnly());
+			}
+		
 		}
 	}
 }

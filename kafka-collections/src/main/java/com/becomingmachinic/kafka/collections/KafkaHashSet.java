@@ -73,10 +73,8 @@ public class KafkaHashSet<K> extends AbstractKafkaHashSet<K> implements KSet<K> 
 	}
 	@Override
 	public boolean add(K k) {
-		KafkaCollectionException exp = this.getException();
-		if (exp != null) {
-			throw exp;
-		}
+		checkErrors();
+		
 		if (k != null) {
 			return this.addKey(k);
 		}
@@ -85,10 +83,8 @@ public class KafkaHashSet<K> extends AbstractKafkaHashSet<K> implements KSet<K> 
 	@SuppressWarnings("unchecked")
 	@Override
 	public boolean remove(Object o) {
-		KafkaCollectionException exp = this.getException();
-		if (exp != null) {
-			throw exp;
-		}
+		checkErrors();
+		
 		try {
 			return this.removeKey((K) o);
 		} catch (ClassCastException e) {
@@ -111,9 +107,7 @@ public class KafkaHashSet<K> extends AbstractKafkaHashSet<K> implements KSet<K> 
 	}
 	@Override
 	public boolean addAll(Collection<? extends K> c) {
-		if (this.getException() != null) {
-			throw this.getException();
-		}
+		checkErrors();
 		
 		boolean changed = false;
 		for (K key : c) {
