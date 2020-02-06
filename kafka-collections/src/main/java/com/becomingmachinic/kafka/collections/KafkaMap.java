@@ -14,7 +14,11 @@
 
 package com.becomingmachinic.kafka.collections;
 
-import java.util.*;
+import java.util.Collection;
+import java.util.Iterator;
+import java.util.Map;
+import java.util.Objects;
+import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.function.Function;
@@ -108,6 +112,7 @@ public class KafkaMap<K, V, KK, KV> extends AbstractKafkaMap<K,V,KK, KV> impleme
 		return null;
 	}
 	
+	@SuppressWarnings("unchecked")
 	@Override
 	public boolean remove(Object key, Object value) {
 		checkErrors();

@@ -273,7 +273,6 @@ public class SetCollectionTest {
 			set1.awaitWarmupComplete(30, TimeUnit.SECONDS);
 			Assertions.assertEquals(0, set1.size());
 			
-			List<String> tempList = new ArrayList<>();
 			for (int i = 0; i < 512; i++) {
 				set1.add(Integer.toString(i));
 			}

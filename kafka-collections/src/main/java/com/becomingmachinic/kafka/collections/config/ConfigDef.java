@@ -1,10 +1,11 @@
 package com.becomingmachinic.kafka.collections.config;
 
-import com.becomingmachinic.kafka.collections.CollectionConfig;
-import com.becomingmachinic.kafka.collections.KafkaCollectionConfigurationException;
-
-import java.util.*;
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.LinkedHashMap;
+import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Set;
 
 public class ConfigDef {
 	protected final Map<String,ConfigKey<?>> configDefMap = new LinkedHashMap<>();

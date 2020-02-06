@@ -16,6 +16,8 @@ package com.becomingmachinic.kafka.collections;
 
 public class HashStreamException extends KafkaCollectionException {
 	
+	private static final long serialVersionUID = 8896900904091077824L;
+	
 	public HashStreamException(String message) {
 		super(message);
 	}

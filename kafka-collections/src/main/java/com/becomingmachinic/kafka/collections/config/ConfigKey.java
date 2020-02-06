@@ -1,8 +1,12 @@
 package com.becomingmachinic.kafka.collections.config;
 
-import com.becomingmachinic.kafka.collections.KafkaCollectionConfigurationException;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.List;
+import java.util.Map;
 
-import java.util.*;
+import com.becomingmachinic.kafka.collections.KafkaCollectionConfigurationException;
 
 public abstract class ConfigKey<T> {
 	protected final String name;
@@ -105,7 +109,7 @@ public abstract class ConfigKey<T> {
 				return Arrays.asList((String[]) value);
 			} else if(value instanceof Collection){
 				List<String> stringList = new ArrayList<>();
-				for(Object valueEntry : ((Collection)value)){
+				for (Object valueEntry : ((Collection<?>) value)) {
 					if(valueEntry instanceof String){
 						stringList.add((String)valueEntry);
 					}
