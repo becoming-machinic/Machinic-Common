@@ -136,7 +136,7 @@ class CollectionConsumer<K, V> implements Runnable, AutoCloseable {
 			while (!this.stop) {
 				ConsumerRecords<K, V> records = this.consumer.poll(this.maxPollInterval);
 				if (!records.isEmpty()) {
-					logger.debug("Collection {} received {} events", this.name, records.count());
+					logger.trace("Collection {} received {} events", this.name, records.count());
 					collection.onKafkaEvents(records);
 				}
 			}
