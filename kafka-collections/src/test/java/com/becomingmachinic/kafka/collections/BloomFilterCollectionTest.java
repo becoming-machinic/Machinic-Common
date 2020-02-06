@@ -295,6 +295,7 @@ public class BloomFilterCollectionTest {
 	}
 	
 	@Test
+	@Disabled("This test is unnecessary for regression")
 	void bloomFilterCollectionLargeDataTest() throws Exception {
 		configurationMap.put(CollectionConfig.COLLECTION_NAME, "bloomFilterCollectionLargeDataTest");
 		configurationMap.put(CollectionConfig.COLLECTION_WRITE_MODE, CollectionConfig.COLLECTION_WRITE_MODE_BEHIND);
@@ -318,68 +319,4 @@ public class BloomFilterCollectionTest {
 			Assertions.assertTrue(bloomFilter.getFalsePositiveProbability() <= bloomFilter.getExpectedFalsePositiveProbability());
 		}
 	}
-	
-	// @Test
-	// void hTreeHashSetTest() throws Exception {
-	// configurationMap.put(CollectionConfig.COLLECTION_NAME, "hTreeHashSetTest");
-	// configurationMap.put(CollectionConfig.COLLECTION_WRITE_MODE, CollectionConfig.COLLECTION_WRITE_MODE_AHEAD);
-	// configurationMap.put(CollectionConfig.COLLECTION_SEND_MODE, CollectionConfig.COLLECTION_SEND_MODE_SYNCHRONOUS);
-	//
-	// DB db = DBMaker.memoryDB().make();
-	// Set<Hash> hTreeSet = db.hashSet("hTreeSet",new MapDBSerializerHash()).create();
-	//
-	// try (KafkaHashSet<String> set = new KafkaHashSet<String>(hTreeSet,new CollectionConfig(configurationMap), HashingSerializer.stringSerializer(),new HashStreamProviderSHA256())) {
-	// set.awaitWarmupComplete(30, TimeUnit.SECONDS);
-	// Assertions.assertEquals(0, set.size());
-	//
-	// for (int i = 0; i < 512; i++) {
-	// Assertions.assertTrue(set.add(Integer.toString(i)));
-	// }
-	//
-	// Assertions.assertEquals(512, set.size());
-	//
-	// for (int i = 0; i < 512; i++) {
-	// Assertions.assertTrue(set.contains(Integer.toString(i)));
-	// }
-	//
-	// Assertions.assertEquals(set,set);
-	// Assertions.assertEquals(set.hashCode(),set.hashCode());
-	// set.clear();
-	// Assertions.assertEquals(0,set.size());
-	// Assertions.assertFalse(set.remove("non matching value"));
-	// Assertions.assertFalse(set.remove(1));
-	// }
-	// }
-	//
-	// @Test
-	// void bTreeHashSetTest() throws Exception {
-	// configurationMap.put(CollectionConfig.COLLECTION_NAME, "bTreeHashSetTest");
-	// configurationMap.put(CollectionConfig.COLLECTION_WRITE_MODE, CollectionConfig.COLLECTION_WRITE_MODE_AHEAD);
-	// configurationMap.put(CollectionConfig.COLLECTION_SEND_MODE, CollectionConfig.COLLECTION_SEND_MODE_SYNCHRONOUS);
-	//
-	// DB db = DBMaker.memoryDB().make();
-	// Set<Hash> hTreeSet = db.treeSet("bTreeSet",new MapDBSerializerHash()).create();
-	//
-	// try (KafkaHashSet<String> set = new KafkaHashSet<String>(hTreeSet,new CollectionConfig(configurationMap), HashingSerializer.stringSerializer(),new HashStreamProviderSHA256())) {
-	// set.awaitWarmupComplete(30, TimeUnit.SECONDS);
-	// Assertions.assertEquals(0, set.size());
-	//
-	// for (int i = 0; i < 1024; i++) {
-	// Assertions.assertTrue(set.add(Integer.toString(i)));
-	// }
-	//
-	// Assertions.assertEquals(1024, set.size());
-	//
-	// for (int i = 0; i < 1024; i++) {
-	// Assertions.assertTrue(set.contains(Integer.toString(i)));
-	// }
-	//
-	// Assertions.assertEquals(set,set);
-	// Assertions.assertEquals(set.hashCode(),set.hashCode());
-	// set.clear();
-	// Assertions.assertEquals(0,set.size());
-	// Assertions.assertFalse(set.remove("non matching value"));
-	// Assertions.assertFalse(set.remove(1));
-	// }
-	// }
 }

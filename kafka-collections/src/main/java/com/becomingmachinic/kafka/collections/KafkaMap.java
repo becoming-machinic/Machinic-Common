@@ -14,77 +14,19 @@
 
 package com.becomingmachinic.kafka.collections;
 
-import java.util.Collection;
-import java.util.Iterator;
-import java.util.Map;
-import java.util.Objects;
-import java.util.Set;
+import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
+import java.util.function.Function;
 
-public class KafkaMap<K, V, KK, KV> extends AbstractKafkaCollection<KK, KV> implements KMap<K, V> {
-	
-	protected final ConcurrentMap<K, V> delegateMap;
-	protected final CollectionSerde<KK, K> keySerde;
-	protected final CollectionSerde<KV, V> valueSerde;
+public class KafkaMap<K, V, KK, KV> extends AbstractKafkaMap<K,V,KK, KV> implements KMap<K, V> {
 	
 	public KafkaMap(CollectionConfig config, CollectionSerde<KK, K> keySerde, CollectionSerde<KV, V> valueSerde) {
 		this(new ConcurrentHashMap<K, V>(), config, keySerde, valueSerde);
 	}
 	
 	public KafkaMap(ConcurrentMap<K, V> delegateMap, CollectionConfig collectionConfig, CollectionSerde<KK, K> keySerde, CollectionSerde<KV, V> valueSerde) {
-		super(collectionConfig,
-				(!collectionConfig.isReadOnly() ? new CollectionProducer<KK, KV>(collectionConfig, keySerde.getRawSerializer(), valueSerde.getRawSerializer()) : null),
-				new CollectionConsumer<KK, KV>(collectionConfig, keySerde.getRawDeserializer(), valueSerde.getRawDeserializer()));
-		
-		this.delegateMap = delegateMap;
-		this.keySerde = keySerde;
-		this.valueSerde = valueSerde;
-		super.start();
-	}
-	
-	protected V updateCollection(K key, V value) {
-		if (value != null) {
-			if (CollectionConfig.COLLECTION_WRITE_MODE_BEHIND.equals(this.writeMode)) {
-				V oldValue = this.delegateMap.put(key, value);
-				super.sendKafkaEvent(this.keySerde.serialize(key), this.valueSerde.serialize(value));
-				return oldValue;
-			} else if (CollectionConfig.COLLECTION_WRITE_MODE_AHEAD.equals(this.writeMode)) {
-				V oldValue = this.delegateMap.get(key);
-				super.sendKafkaEvent(this.keySerde.serialize(key), this.valueSerde.serialize(value));
-				return oldValue;
-			} else {
-				throw new KafkaCollectionConfigurationException("The %s value %s is not supported by this collection", CollectionConfig.COLLECTION_WRITE_MODE, this.writeMode);
-			}
-		} else {
-			if (CollectionConfig.COLLECTION_WRITE_MODE_BEHIND.equals(this.writeMode)) {
-				V oldValue = this.delegateMap.remove(key);
-				super.sendKafkaEvent(this.keySerde.serialize(key), null);
-				return oldValue;
-			} else if (CollectionConfig.COLLECTION_WRITE_MODE_AHEAD.equals(this.writeMode)) {
-				V oldValue = this.delegateMap.get(key);
-				super.sendKafkaEvent(this.keySerde.serialize(key), null);
-				return oldValue;
-			} else {
-				throw new KafkaCollectionConfigurationException("The %s value %s is not supported by this collection", CollectionConfig.COLLECTION_WRITE_MODE, this.writeMode);
-			}
-		}
-	}
-	
-	@Override
-	protected void onKafkaEvent(CollectionConsumerRecord<KK, KV> collectionRecord) {
-		KK rawKey = collectionRecord.key();
-		KV rawValue = collectionRecord.value();
-		
-		if (rawKey != null) {
-			if (rawValue != null) {
-				this.delegateMap.put(this.keySerde.deserialize(rawKey), this.valueSerde.deserialize(rawValue));
-				// TODO update metrics
-			} else {
-				this.delegateMap.remove(this.keySerde.deserialize(rawKey));
-				// TODO update metrics
-			}
-		}
+		super(delegateMap,collectionConfig,keySerde,valueSerde);
 	}
 	
 	@Override
@@ -128,7 +70,7 @@ public class KafkaMap<K, V, KK, KV> extends AbstractKafkaCollection<KK, KV> impl
 	public V put(K key, V value) {
 		checkErrors();
 		
-		return this.updateCollection(key, value);
+		return this.updateCollectionLocal(key, value);
 	}
 	
 	@Override
@@ -136,8 +78,22 @@ public class KafkaMap<K, V, KK, KV> extends AbstractKafkaCollection<KK, KV> impl
 		checkErrors();
 		
 		for (Entry<? extends K, ? extends V> entry : m.entrySet()) {
-			this.updateCollection(entry.getKey(), entry.getValue());
+			this.updateCollectionLocal(entry.getKey(), entry.getValue());
 		}
+	}
+	
+	@Override
+	public V putIfAbsent(K key, V value) {
+		checkErrors();
+		
+		return this.putIfAbsentLocal(key, value);
+	}
+	
+	@Override
+	public V computeIfAbsent(K key, Function<? super K, ? extends V> mappingFunction) {
+		checkErrors();
+		
+		return this.computeIfAbsentLocal(key, mappingFunction);
 	}
 	
 	@SuppressWarnings("unchecked")
@@ -146,10 +102,35 @@ public class KafkaMap<K, V, KK, KV> extends AbstractKafkaCollection<KK, KV> impl
 		checkErrors();
 		
 		try {
-			return this.updateCollection((K) key, null);
+			return this.updateCollectionLocal((K) key, null);
 		} catch (ClassCastException e) {
 		}
 		return null;
+	}
+	
+	@Override
+	public boolean remove(Object key, Object value) {
+		checkErrors();
+		
+		try {
+			return this.removeLocal((K) key, (V) value);
+		} catch (ClassCastException e) {
+		}
+		return false;
+	}
+	
+	@Override
+	public boolean replace(K key, V oldValue, V newValue) {
+		checkErrors();
+		
+		return this.replaceLocal(key,oldValue,newValue);
+	}
+	
+	@Override
+	public V replace(K key, V value) {
+		checkErrors();
+		
+		return this.updateCollectionLocal(key, value);
 	}
 	
 	@Override
@@ -168,7 +149,7 @@ public class KafkaMap<K, V, KK, KV> extends AbstractKafkaCollection<KK, KV> impl
 		
 		Iterator<K> it = this.delegateMap.keySet().iterator();
 		while (it.hasNext()) {
-			this.updateCollection(it.next(), null);
+			this.updateCollectionLocal(it.next(), null);
 		}
 	}
 	

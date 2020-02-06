@@ -364,6 +364,10 @@ public class CollectionConfig {
 		return new HashMap<>(this.configurationMap);
 	}
 	
+	public Map<String, Object> getSourceConfig() {
+		return new HashMap<>(this.collectionConfigMap);
+	}
+	
 	@Override
 	public boolean equals(Object o) {
 		if (o != null && (o instanceof CollectionConfig)) {
