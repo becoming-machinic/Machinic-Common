@@ -23,7 +23,6 @@ public abstract class AbstractKafkaMap<K, V, KK, KV> extends AbstractKafkaCollec
 	protected final CollectionSerde<KK, K> keySerde;
 	protected final CollectionSerde<KV, V> valueSerde;
 	
-	
 	public AbstractKafkaMap(ConcurrentMap<K, V> delegateMap, CollectionConfig collectionConfig, CollectionSerde<KK, K> keySerde, CollectionSerde<KV, V> valueSerde) {
 		super(collectionConfig,
 				(!collectionConfig.isReadOnly() ? new CollectionProducer<KK, KV>(collectionConfig, keySerde.getRawSerializer(), valueSerde.getRawSerializer()) : null),
@@ -37,104 +36,44 @@ public abstract class AbstractKafkaMap<K, V, KK, KV> extends AbstractKafkaCollec
 	
 	protected V updateCollectionLocal(K key, V value) {
 		if (value != null) {
-			if (CollectionConfig.COLLECTION_WRITE_MODE_BEHIND.equals(this.writeMode)) {
-				V oldValue = this.delegateMap.put(key, value);
-				super.sendKafkaEvent(this.keySerde.serialize(key), this.valueSerde.serialize(value));
-				return oldValue;
-			} else if (CollectionConfig.COLLECTION_WRITE_MODE_AHEAD.equals(this.writeMode)) {
-				V oldValue = this.delegateMap.get(key);
-				super.sendKafkaEvent(this.keySerde.serialize(key), this.valueSerde.serialize(value));
-				return oldValue;
-			} else {
-				throw new KafkaCollectionConfigurationException("The %s value %s is not supported by this collection", CollectionConfig.COLLECTION_WRITE_MODE, this.writeMode);
-			}
+			V oldValue = this.delegateMap.put(key, value);
+			super.sendKafkaEvent(this.keySerde.serialize(key), this.valueSerde.serialize(value));
+			return oldValue;
 		} else {
-			if (CollectionConfig.COLLECTION_WRITE_MODE_BEHIND.equals(this.writeMode)) {
-				V oldValue = this.delegateMap.remove(key);
-				super.sendKafkaEvent(this.keySerde.serialize(key), null);
-				return oldValue;
-			} else if (CollectionConfig.COLLECTION_WRITE_MODE_AHEAD.equals(this.writeMode)) {
-				V oldValue = this.delegateMap.get(key);
-				super.sendKafkaEvent(this.keySerde.serialize(key), null);
-				return oldValue;
-			} else {
-				throw new KafkaCollectionConfigurationException("The %s value %s is not supported by this collection", CollectionConfig.COLLECTION_WRITE_MODE, this.writeMode);
-			}
+			V oldValue = this.delegateMap.remove(key);
+			super.sendKafkaEvent(this.keySerde.serialize(key), null);
+			return oldValue;
 		}
 	}
 	
 	protected V putIfAbsentLocal(K key, V value) {
-		if (CollectionConfig.COLLECTION_WRITE_MODE_BEHIND.equals(this.writeMode)) {
-			V oldValue = this.delegateMap.putIfAbsent(key, value);
-			if (oldValue == null) {
-				super.sendKafkaEvent(this.keySerde.serialize(key), this.valueSerde.serialize(value));
-			}
-			return oldValue;
-		} else if (CollectionConfig.COLLECTION_WRITE_MODE_AHEAD.equals(this.writeMode)) {
-			V oldValue = this.delegateMap.get(key);
-			if (oldValue == null) {
-				super.sendKafkaEvent(this.keySerde.serialize(key), this.valueSerde.serialize(value));
-			}
-			return oldValue;
-		} else {
-			throw new KafkaCollectionConfigurationException("The %s value %s is not supported by this collection", CollectionConfig.COLLECTION_WRITE_MODE, this.writeMode);
+		V oldValue = this.delegateMap.putIfAbsent(key, value);
+		if (oldValue == null) {
+			super.sendKafkaEvent(this.keySerde.serialize(key), this.valueSerde.serialize(value));
 		}
+		return oldValue;
 	}
 	
 	protected V computeIfAbsentLocal(K key, Function<? super K, ? extends V> mappingFunction) {
-		if (CollectionConfig.COLLECTION_WRITE_MODE_BEHIND.equals(this.writeMode)) {
-			V oldOrNewValue = this.delegateMap.computeIfAbsent(key, mappingFunction);
-			super.sendKafkaEvent(this.keySerde.serialize(key), this.valueSerde.serialize(oldOrNewValue));
-			return oldOrNewValue;
-		} else if (CollectionConfig.COLLECTION_WRITE_MODE_AHEAD.equals(this.writeMode)) {
-			V oldValue = this.delegateMap.get(key);
-			if (oldValue == null) {
-				V newValue = mappingFunction.apply(key);
-				super.sendKafkaEvent(this.keySerde.serialize(key), this.valueSerde.serialize(newValue));
-				return newValue;
-			}
-			return oldValue;
-		} else {
-			throw new KafkaCollectionConfigurationException("The %s value %s is not supported by this collection", CollectionConfig.COLLECTION_WRITE_MODE, this.writeMode);
-		}
+		V oldOrNewValue = this.delegateMap.computeIfAbsent(key, mappingFunction);
+		super.sendKafkaEvent(this.keySerde.serialize(key), this.valueSerde.serialize(oldOrNewValue));
+		return oldOrNewValue;
 	}
 	
 	protected boolean removeLocal(K key, V value) {
-		if (CollectionConfig.COLLECTION_WRITE_MODE_BEHIND.equals(this.writeMode)) {
-			boolean changed = this.delegateMap.remove(key, value);
-			if (changed) {
-				super.sendKafkaEvent(this.keySerde.serialize(key), null);
-			}
-			return changed;
-		} else if (CollectionConfig.COLLECTION_WRITE_MODE_AHEAD.equals(this.writeMode)) {
-			V oldValue = this.delegateMap.get(key);
-			if (oldValue != null) {
-				super.sendKafkaEvent(this.keySerde.serialize(key), null);
-				return true;
-			}
-			return false;
-		} else {
-			throw new KafkaCollectionConfigurationException("The %s value %s is not supported by this collection", CollectionConfig.COLLECTION_WRITE_MODE, this.writeMode);
+		boolean changed = this.delegateMap.remove(key, value);
+		if (changed) {
+			super.sendKafkaEvent(this.keySerde.serialize(key), null);
 		}
+		return changed;
 	}
 	
-	protected boolean replaceLocal(K key, V oldValue,V newValue) {
-		if (CollectionConfig.COLLECTION_WRITE_MODE_BEHIND.equals(this.writeMode)) {
-			boolean changed = this.delegateMap.replace(key, oldValue,newValue);
-			if (changed) {
-				super.sendKafkaEvent(this.keySerde.serialize(key), this.valueSerde.serialize(newValue));
-			}
-			return changed;
-		} else if (CollectionConfig.COLLECTION_WRITE_MODE_AHEAD.equals(this.writeMode)) {
-			boolean changed = this.delegateMap.replace(key, oldValue,oldValue);
-			if (changed) {
-				super.sendKafkaEvent(this.keySerde.serialize(key), this.valueSerde.serialize(newValue));
-				return true;
-			}
-			return false;
-		} else {
-			throw new KafkaCollectionConfigurationException("The %s value %s is not supported by this collection", CollectionConfig.COLLECTION_WRITE_MODE, this.writeMode);
+	protected boolean replaceLocal(K key, V oldValue, V newValue) {
+		boolean changed = this.delegateMap.replace(key, oldValue, newValue);
+		if (changed) {
+			super.sendKafkaEvent(this.keySerde.serialize(key), this.valueSerde.serialize(newValue));
 		}
+		return changed;
 	}
 	
 	@Override

@@ -4,6 +4,7 @@ import static org.junit.jupiter.api.parallel.ExecutionMode.CONCURRENT;
 
 import java.time.Duration;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -60,12 +61,11 @@ public class HashSetCollectionTest {
 		configurationMap.put(CollectionConfig.COLLECTION_NAME, "anyName");
 		KafkaUtils.checkConnectivity(new CollectionConfig(configurationMap));
 	}
-	
+			
 	@SuppressWarnings("unlikely-arg-type")
 	@Test
-	void hashSetCollectionSynchronousWriteAheadTest() throws Exception {
-		configurationMap.put(CollectionConfig.COLLECTION_NAME, "hashSetCollectionSynchronousWriteAheadTest");
-		configurationMap.put(CollectionConfig.COLLECTION_WRITE_MODE, CollectionConfig.COLLECTION_WRITE_MODE_AHEAD);
+	void hashSetCollectionSynchronousTest() throws Exception {
+		configurationMap.put(CollectionConfig.COLLECTION_NAME, "hashSetCollectionSynchronousTest");
 		configurationMap.put(CollectionConfig.COLLECTION_SEND_MODE, CollectionConfig.COLLECTION_SEND_MODE_SYNCHRONOUS);
 		
 		try (KSet<String> set = new KafkaHashSet<String>(new CollectionConfig(configurationMap), HashingSerializer.stringSerializer(), new HashStreamProviderSHA256())) {
@@ -86,6 +86,16 @@ public class HashSetCollectionTest {
 			Assertions.assertEquals(set.hashCode(), set.hashCode());
 			set.clear();
 			Assertions.assertEquals(0, set.size());
+			Assertions.assertFalse(set.add(null));
+			Assertions.assertTrue(set.addAll(Arrays.asList("listValue")));
+			Assertions.assertFalse(set.contains(Arrays.asList("listValue")));
+			Assertions.assertTrue(set.containsAll(Arrays.asList("listValue")));
+			Assertions.assertFalse(set.containsAll(Arrays.asList("listValue", "non matching value")));
+			Assertions.assertFalse(set.containsAll(Arrays.asList(Long.valueOf(1l))));
+			Assertions.assertTrue(set.removeAll(Arrays.asList("listValue", "non matching value")));
+			Assertions.assertFalse(set.removeAll(Arrays.asList(Long.valueOf(1l))));
+			Assertions.assertFalse(set.remove(null));
+			Assertions.assertFalse(set.remove(Long.valueOf(1l)));
 			Assertions.assertFalse(set.remove("non matching value"));
 			Assertions.assertFalse(set.remove(1));
 		}
@@ -93,71 +103,8 @@ public class HashSetCollectionTest {
 	
 	@SuppressWarnings("unlikely-arg-type")
 	@Test
-	void hashSetCollectionAsynchronousWriteAheadTest() throws Exception {
-		configurationMap.put(CollectionConfig.COLLECTION_NAME, "hashSetCollectionAsynchronousWriteAheadTest");
-		configurationMap.put(CollectionConfig.COLLECTION_WRITE_MODE, CollectionConfig.COLLECTION_WRITE_MODE_AHEAD);
-		configurationMap.put(CollectionConfig.COLLECTION_SEND_MODE, CollectionConfig.COLLECTION_SEND_MODE_ASYNCHRONOUS);
-		
-		try (KSet<String> set = new KafkaHashSet<String>(new CollectionConfig(configurationMap), HashingSerializer.stringSerializer(), new HashStreamProviderSHA256())) {
-			set.awaitWarmupComplete(30, TimeUnit.SECONDS);
-			Assertions.assertEquals(0, set.size());
-			
-			for (int i = 0; i < 512; i++) {
-				Assertions.assertTrue(set.add(Integer.toString(i)));
-			}
-			Thread.sleep(1000);
-			
-			Assertions.assertEquals(512, set.size());
-			
-			for (int i = 0; i < 512; i++) {
-				Assertions.assertTrue(set.contains(Integer.toString(i)));
-			}
-			
-			Assertions.assertEquals(set, set);
-			Assertions.assertEquals(set.hashCode(), set.hashCode());
-			set.clear();
-			Thread.sleep(1000);
-			Assertions.assertEquals(0, set.size());
-			Assertions.assertFalse(set.remove("non matching value"));
-			Assertions.assertFalse(set.remove(1));
-		}
-	}
-	
-	@SuppressWarnings("unlikely-arg-type")
-	@Test
-	void hashSetCollectionSynchronousWriteBehindTest() throws Exception {
-		configurationMap.put(CollectionConfig.COLLECTION_NAME, "hashSetCollectionSynchronousWriteBehindTest");
-		configurationMap.put(CollectionConfig.COLLECTION_WRITE_MODE, CollectionConfig.COLLECTION_WRITE_MODE_BEHIND);
-		configurationMap.put(CollectionConfig.COLLECTION_SEND_MODE, CollectionConfig.COLLECTION_SEND_MODE_SYNCHRONOUS);
-		
-		try (KSet<String> set = new KafkaHashSet<String>(new CollectionConfig(configurationMap), HashingSerializer.stringSerializer(), new HashStreamProviderSHA256())) {
-			set.awaitWarmupComplete(30, TimeUnit.SECONDS);
-			Assertions.assertEquals(0, set.size());
-			
-			for (int i = 0; i < 512; i++) {
-				Assertions.assertTrue(set.add(Integer.toString(i)));
-			}
-			
-			Assertions.assertEquals(512, set.size());
-			
-			for (int i = 0; i < 512; i++) {
-				Assertions.assertTrue(set.contains(Integer.toString(i)));
-			}
-			
-			Assertions.assertEquals(set, set);
-			Assertions.assertEquals(set.hashCode(), set.hashCode());
-			set.clear();
-			Assertions.assertEquals(0, set.size());
-			Assertions.assertFalse(set.remove("non matching value"));
-			Assertions.assertFalse(set.remove(1));
-		}
-	}
-	
-	@SuppressWarnings("unlikely-arg-type")
-	@Test
-	void hashSetCollectionAsynchronousWriteBehindTest() throws Exception {
-		configurationMap.put(CollectionConfig.COLLECTION_NAME, "hashSetCollectionAsynchronousWriteBehindTest");
-		configurationMap.put(CollectionConfig.COLLECTION_WRITE_MODE, CollectionConfig.COLLECTION_WRITE_MODE_BEHIND);
+	void hashSetCollectionAsynchronousTest() throws Exception {
+		configurationMap.put(CollectionConfig.COLLECTION_NAME, "hashSetCollectionAsynchronousTest");
 		configurationMap.put(CollectionConfig.COLLECTION_SEND_MODE, CollectionConfig.COLLECTION_SEND_MODE_ASYNCHRONOUS);
 		
 		try (KSet<String> set = new KafkaHashSet<String>(new CollectionConfig(configurationMap), HashingSerializer.stringSerializer(), new HashStreamProviderSHA256())) {
@@ -179,6 +126,16 @@ public class HashSetCollectionTest {
 			set.clear();
 			Thread.sleep(1000);
 			Assertions.assertEquals(0, set.size());
+			Assertions.assertFalse(set.add(null));
+			Assertions.assertTrue(set.addAll(Arrays.asList("listValue")));
+			Assertions.assertFalse(set.contains(Arrays.asList("listValue")));
+			Assertions.assertTrue(set.containsAll(Arrays.asList("listValue")));
+			Assertions.assertFalse(set.containsAll(Arrays.asList("listValue", "non matching value")));
+			Assertions.assertFalse(set.containsAll(Arrays.asList(Long.valueOf(1l))));
+			Assertions.assertTrue(set.removeAll(Arrays.asList("listValue", "non matching value")));
+			Assertions.assertFalse(set.removeAll(Arrays.asList(Long.valueOf(1l))));
+			Assertions.assertFalse(set.remove(null));
+			Assertions.assertFalse(set.remove(Long.valueOf(1l)));
 			Assertions.assertFalse(set.remove("non matching value"));
 			Assertions.assertFalse(set.remove(1));
 		}
@@ -188,7 +145,6 @@ public class HashSetCollectionTest {
 	@Test
 	void hTreeHashSetTest() throws Exception {
 		configurationMap.put(CollectionConfig.COLLECTION_NAME, "hTreeHashSetTest");
-		configurationMap.put(CollectionConfig.COLLECTION_WRITE_MODE, CollectionConfig.COLLECTION_WRITE_MODE_AHEAD);
 		configurationMap.put(CollectionConfig.COLLECTION_SEND_MODE, CollectionConfig.COLLECTION_SEND_MODE_SYNCHRONOUS);
 		
 		DB db = DBMaker.memoryDB().make();
@@ -221,7 +177,6 @@ public class HashSetCollectionTest {
 	@Test
 	void bTreeHashSetTest() throws Exception {
 		configurationMap.put(CollectionConfig.COLLECTION_NAME, "bTreeHashSetTest");
-		configurationMap.put(CollectionConfig.COLLECTION_WRITE_MODE, CollectionConfig.COLLECTION_WRITE_MODE_AHEAD);
 		configurationMap.put(CollectionConfig.COLLECTION_SEND_MODE, CollectionConfig.COLLECTION_SEND_MODE_SYNCHRONOUS);
 		
 		DB db = DBMaker.memoryDB().make();
@@ -251,9 +206,8 @@ public class HashSetCollectionTest {
 	}
 	
 	@Test
-	void hashSetCollectionAsynchronousWriteBehindDeduplicationTest() throws Exception {
-		configurationMap.put(CollectionConfig.COLLECTION_NAME, "hashSetCollectionAsynchronousWriteBehindDeduplicationTest");
-		configurationMap.put(CollectionConfig.COLLECTION_WRITE_MODE, CollectionConfig.COLLECTION_WRITE_MODE_BEHIND);
+	void hashSetCollectionAsynchronousDeduplicationTest() throws Exception {
+		configurationMap.put(CollectionConfig.COLLECTION_NAME, "hashSetCollectionAsynchronousDeduplicationTest");
 		configurationMap.put(CollectionConfig.COLLECTION_SEND_MODE, CollectionConfig.COLLECTION_SEND_MODE_ASYNCHRONOUS);
 		configurationMap.put(ConsumerConfig.MAX_POLL_RECORDS_CONFIG, 1000);
 		int size = 50000;

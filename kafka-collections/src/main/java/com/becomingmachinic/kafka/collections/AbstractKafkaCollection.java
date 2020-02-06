@@ -14,15 +14,15 @@
 
 package com.becomingmachinic.kafka.collections;
 
-import org.apache.kafka.clients.consumer.ConsumerRecord;
-import org.apache.kafka.clients.consumer.ConsumerRecords;
-
 import java.nio.ByteBuffer;
 import java.security.SecureRandom;
 import java.util.concurrent.ConcurrentSkipListSet;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
+
+import org.apache.kafka.clients.consumer.ConsumerRecord;
+import org.apache.kafka.clients.consumer.ConsumerRecords;
 
 public abstract class AbstractKafkaCollection<K, V> implements AutoCloseable {
 	
@@ -34,7 +34,7 @@ public abstract class AbstractKafkaCollection<K, V> implements AutoCloseable {
 	protected final String name;
 	protected final String sendMode;
 	protected final long sendTimeout;
-	protected final String writeMode;
+	protected final boolean readOwnWrites;
 	protected final boolean readOnly;
 	protected final ConcurrentSkipListSet<SendTask<K, V>> sendTasks = new ConcurrentSkipListSet<>();
 	protected final CopyOnWriteArrayList<KafkaCollectionEventListener<K, V>> listeners = new CopyOnWriteArrayList<>();
@@ -52,7 +52,7 @@ public abstract class AbstractKafkaCollection<K, V> implements AutoCloseable {
 		this.name = collectionConfig.getName();
 		this.sendMode = collectionConfig.getSendMode();
 		this.sendTimeout = collectionConfig.getSendTimeoutMs();
-		this.writeMode = collectionConfig.getWriteMode();
+		this.readOwnWrites = collectionConfig.isReadOwnWrites();
 		this.readOnly = collectionConfig.isReadOnly();
 		collectionConfig.logConfig();
 		
@@ -124,7 +124,7 @@ public abstract class AbstractKafkaCollection<K, V> implements AutoCloseable {
 		for (ConsumerRecord<K, V> record : records) {
 			CollectionConsumerRecord<K, V> collectionRecord = new CollectionConsumerRecord<>(record);
 			
-			if (this.writeMode.equals(CollectionConfig.COLLECTION_WRITE_MODE_AHEAD) || !this.instanceId.equals(collectionRecord.getInstanceId())) {
+			if (this.readOwnWrites || !this.instanceId.equals(collectionRecord.getInstanceId())) {
 				this.onKafkaEvent(collectionRecord);
 			}
 			

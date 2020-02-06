@@ -132,11 +132,11 @@ public class CollectionConfigTest {
 		this.configurationMap.put(CollectionConfig.COLLECTION_SEND_MODE, CollectionConfig.COLLECTION_SEND_MODE_SYNCHRONOUS);
 		Assertions.assertEquals(CollectionConfig.COLLECTION_SEND_MODE_SYNCHRONOUS, new CollectionConfig(this.configurationMap).getSendMode());
 		
-		this.configurationMap.put(CollectionConfig.COLLECTION_WRITE_MODE, CollectionConfig.COLLECTION_WRITE_MODE_BEHIND);
-		Assertions.assertEquals(CollectionConfig.COLLECTION_WRITE_MODE_BEHIND, new CollectionConfig(this.configurationMap).getWriteMode());
+		this.configurationMap.put(CollectionConfig.COLLECTION_READ_OWN_WRITES, null);
+		Assertions.assertEquals(false, new CollectionConfig(this.configurationMap).isReadOwnWrites());
 		
-		this.configurationMap.put(CollectionConfig.COLLECTION_WRITE_MODE, CollectionConfig.COLLECTION_WRITE_MODE_AHEAD);
-		Assertions.assertEquals(CollectionConfig.COLLECTION_WRITE_MODE_AHEAD, new CollectionConfig(this.configurationMap).getWriteMode());
+		this.configurationMap.put(CollectionConfig.COLLECTION_READ_OWN_WRITES, true);
+		Assertions.assertEquals(true, new CollectionConfig(this.configurationMap).isReadOwnWrites());
 		
 		Assertions.assertEquals(false, new CollectionConfig(this.configurationMap).isSkipConnectivityCheck());
 		

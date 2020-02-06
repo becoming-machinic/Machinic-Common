@@ -43,15 +43,24 @@ public class KafkaHashSet<K> extends AbstractKafkaHashSet<K> implements KSet<K> 
 	
 	@Override
 	protected boolean addLocal(Hash key) {
-		return this.delegateSet.add(key);
+		if (key != null) {
+			return this.delegateSet.add(key);
+		}
+		return false;
 	}
 	@Override
 	protected boolean removeLocal(Hash key) {
-		return this.delegateSet.remove(key);
+		if (key != null) {
+			return this.delegateSet.remove(key);
+		}
+		return false;
 	}
 	@Override
 	protected boolean containsLocal(Hash key) {
-		return this.delegateSet.contains(key);
+		if (key != null) {
+			return this.delegateSet.contains(key);
+		}
+		return false;
 	}
 	
 	@Override

@@ -52,38 +52,22 @@ public abstract class AbstractKafkaSet<KK, K> extends AbstractKafkaCollection<KK
 	
 	protected boolean collectionAdd(K k) {
 		if (k != null) {
-			if (CollectionConfig.COLLECTION_WRITE_MODE_BEHIND.equals(this.writeMode)) {
-				boolean added = this.addLocal(k);
-				if (added) {
-					super.sendKafkaEvent(this.keySerde.serialize(k), this.valueSerde.serialize(VALUE));
-				}
-				return added;
-			} else if (CollectionConfig.COLLECTION_WRITE_MODE_AHEAD.equals(this.writeMode)) {
-				boolean contains = this.containsLocal(k);
-				super.sendKafkaEvent(this.keySerde.serialize(k), VALUE);
-				return !contains;
-			} else {
-				throw new KafkaCollectionConfigurationException("The %s value %s is not supported by this collection", CollectionConfig.COLLECTION_WRITE_MODE, this.writeMode);
+			boolean added = this.addLocal(k);
+			if (added) {
+				super.sendKafkaEvent(this.keySerde.serialize(k), this.valueSerde.serialize(VALUE));
 			}
+			return added;
 		}
 		return false;
 	}
 	
 	protected boolean collectionRemove(K k) {
 		if (k != null) {
-			if (CollectionConfig.COLLECTION_WRITE_MODE_BEHIND.equals(this.writeMode)) {
-				boolean remove = this.removeLocal(k);
-				if (remove) {
-					super.sendKafkaEvent(this.keySerde.serialize(k), null);
-				}
-				return remove;
-			} else if (CollectionConfig.COLLECTION_WRITE_MODE_AHEAD.equals(this.writeMode)) {
-				boolean contains = this.containsLocal(k);
+			boolean remove = this.removeLocal(k);
+			if (remove) {
 				super.sendKafkaEvent(this.keySerde.serialize(k), null);
-				return contains;
-			} else {
-				throw new KafkaCollectionConfigurationException("The %s value %s is not supported by this collection", CollectionConfig.COLLECTION_WRITE_MODE, this.writeMode);
 			}
+			return remove;
 		}
 		return false;
 	}

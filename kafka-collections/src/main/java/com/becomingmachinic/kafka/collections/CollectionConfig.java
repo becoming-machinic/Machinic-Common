@@ -14,7 +14,12 @@
 
 package com.becomingmachinic.kafka.collections;
 
-import com.becomingmachinic.kafka.collections.config.*;
+import java.time.Duration;
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Objects;
+
 import org.apache.kafka.clients.CommonClientConfigs;
 import org.apache.kafka.clients.consumer.ConsumerConfig;
 import org.apache.kafka.common.config.TopicConfig;
@@ -22,11 +27,14 @@ import org.apache.kafka.common.serialization.Deserializer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.time.Duration;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Objects;
+import com.becomingmachinic.kafka.collections.config.BooleanConfigKey;
+import com.becomingmachinic.kafka.collections.config.ConfigDef;
+import com.becomingmachinic.kafka.collections.config.IntegerRangeConfigKey;
+import com.becomingmachinic.kafka.collections.config.LongRangeConfigKey;
+import com.becomingmachinic.kafka.collections.config.NameConfigKey;
+import com.becomingmachinic.kafka.collections.config.StringEnumerationConfigKey;
+import com.becomingmachinic.kafka.collections.config.StringListConfigKey;
+import com.becomingmachinic.kafka.collections.config.TopicConfigKey;
 
 public class CollectionConfig {
 	private static final Logger logger = LoggerFactory.getLogger(CollectionConfig.class);
@@ -62,13 +70,9 @@ public class CollectionConfig {
 	 */
 	public static String COLLECTION_SEND_MODE = "collection.send.mode";
 	/**
-	 * Toggle collection between write ahead and write behind mode. <br>
-	 * {@value CollectionConfig#COLLECTION_WRITE_MODE_BEHIND}: Updates local collection first, then sends update to kafka. <br>
-	 * {@value CollectionConfig#COLLECTION_WRITE_MODE_AHEAD}: Sends data to the Kafka topic first. The collection consumer will receive the update from the topic and update the local collection. <br>
-	 * When strong local consistency is required it is recommended to use {@value CollectionConfig#COLLECTION_WRITE_MODE_BEHIND}. When strong topic consistency is more important then local consistency it is
-	 * recommended to use {@value CollectionConfig#COLLECTION_WRITE_MODE_AHEAD}.
+	 * When enabled the collection instance will read its own writes from the kafka topic.
 	 */
-	public static String COLLECTION_WRITE_MODE = "collection.write.mode";
+	public static String COLLECTION_READ_OWN_WRITES = "collection.read.own.writes";
 	/**
 	 * Create the Kafka topic if it does not yet exist.
 	 */
@@ -114,8 +118,6 @@ public class CollectionConfig {
 	public static Boolean COLLECTION_READONLY_DEFAULT_VALUE = false;
 	public static String COLLECTION_SEND_MODE_SYNCHRONOUS = "synchronous";
 	public static String COLLECTION_SEND_MODE_ASYNCHRONOUS = "asynchronous";
-	public static String COLLECTION_WRITE_MODE_AHEAD = "ahead";
-	public static String COLLECTION_WRITE_MODE_BEHIND = "behind";
 	public static String COLLECTION_RESET_OFFSET_BEGINNING = "beginning";
 	public static String COLLECTION_RESET_OFFSET_END = "end";
 	public static String COLLECTION_RECORD_HEADER_NAME = "id";
@@ -145,9 +147,8 @@ public class CollectionConfig {
 				new StringEnumerationConfigKey(COLLECTION_SEND_MODE,
 						COLLECTION_SEND_MODE_ASYNCHRONOUS,
 						Arrays.asList(COLLECTION_SEND_MODE_ASYNCHRONOUS, COLLECTION_SEND_MODE_SYNCHRONOUS)),
-				new StringEnumerationConfigKey(COLLECTION_WRITE_MODE,
-						COLLECTION_WRITE_MODE_BEHIND,
-						Arrays.asList(COLLECTION_WRITE_MODE_BEHIND, COLLECTION_WRITE_MODE_AHEAD)),
+				new BooleanConfigKey(COLLECTION_READ_OWN_WRITES,
+						Boolean.FALSE),
 				new BooleanConfigKey(COLLECTION_SKIP_CONNECTIVITY_CHECK,
 						Boolean.FALSE),
 				new StringEnumerationConfigKey(COLLECTION_RESET_OFFSET,
@@ -255,16 +256,12 @@ public class CollectionConfig {
 		return (String) this.collectionConfigMap.get(COLLECTION_SEND_MODE);
 	}
 	/**
-	 * Toggle collection between write ahead and write behind mode. <br>
-	 * {@value CollectionConfig#COLLECTION_WRITE_MODE_BEHIND}: Updates local collection first, then sends update to kafka. <br>
-	 * {@value CollectionConfig#COLLECTION_WRITE_MODE_AHEAD}: Sends data to the Kafka topic first. The collection consumer will receive the update from the topic and update the local collection. <br>
-	 * When strong local consistency is required it is recommended to use {@value CollectionConfig#COLLECTION_WRITE_MODE_BEHIND}. When strong topic consistency is more important then local consistency it is
-	 * recommended to use {@value CollectionConfig#COLLECTION_WRITE_MODE_AHEAD}.
+	 * When enabled the collection should read its own writes from the Kafka topic.
 	 *
 	 * @return
 	 */
-	public String getWriteMode() {
-		return (String) this.collectionConfigMap.get(COLLECTION_WRITE_MODE);
+	public boolean isReadOwnWrites() {
+		return (boolean) this.collectionConfigMap.get(COLLECTION_READ_OWN_WRITES);
 	}
 	
 	/**

@@ -5,10 +5,11 @@ addons:
       - ppa: docker-bionic
     packages:
     - docker
+sudo: false
     
 language: java
 jdk:
   - openjdk11
 
-sudo: false
-script: mvn clean verify -B
+
+script: mvn clean test -B

@@ -62,75 +62,8 @@ public class SetCollectionTest {
 	
 	@SuppressWarnings("unlikely-arg-type")
 	@Test
-	void setCollectionSynchronousWriteAheadTest() throws Exception {
-		configurationMap.put(CollectionConfig.COLLECTION_NAME, "setCollectionSynchronousWriteAheadTest");
-		configurationMap.put(CollectionConfig.COLLECTION_WRITE_MODE, CollectionConfig.COLLECTION_WRITE_MODE_AHEAD);
-		configurationMap.put(CollectionConfig.COLLECTION_SEND_MODE, CollectionConfig.COLLECTION_SEND_MODE_SYNCHRONOUS);
-		
-		try (KSet<String> set = new KafkaSet<String, String>(new CollectionConfig(configurationMap), CollectionSerde.stringToString())) {
-			set.awaitWarmupComplete(30, TimeUnit.SECONDS);
-			Assertions.assertEquals(0, set.size());
-			
-			for (int i = 0; i < 512; i++) {
-				Assertions.assertTrue(set.add(Integer.toString(i)));
-			}
-			
-			Assertions.assertEquals(512, set.size());
-			
-			for (int i = 0; i < 512; i++) {
-				Assertions.assertTrue(set.contains(Integer.toString(i)));
-			}
-			
-			Assertions.assertEquals(set, set);
-			Assertions.assertEquals(set.hashCode(), set.hashCode());
-			set.clear();
-			Assertions.assertEquals(0, set.size());
-			Assertions.assertEquals(0, set.toArray().length);
-			Assertions.assertEquals(0, set.toArray(new String[0]).length);
-			Assertions.assertTrue(set.isEmpty());
-			Assertions.assertFalse(set.remove("non matching value"));
-			Assertions.assertFalse(set.remove(1));
-		}
-	}
-	
-	@SuppressWarnings("unlikely-arg-type")
-	@Test
-	void setCollectionAsynchronousWriteAheadTest() throws Exception {
-		configurationMap.put(CollectionConfig.COLLECTION_NAME, "setCollectionAsynchronousWriteAheadTest");
-		configurationMap.put(CollectionConfig.COLLECTION_WRITE_MODE, CollectionConfig.COLLECTION_WRITE_MODE_AHEAD);
-		configurationMap.put(CollectionConfig.COLLECTION_SEND_MODE, CollectionConfig.COLLECTION_SEND_MODE_ASYNCHRONOUS);
-		
-		try (KSet<String> set = new KafkaSet<String, String>(new CollectionConfig(configurationMap), CollectionSerde.stringToString())) {
-			set.awaitWarmupComplete(30, TimeUnit.SECONDS);
-			Assertions.assertEquals(0, set.size());
-			
-			for (int i = 0; i < 512; i++) {
-				Assertions.assertTrue(set.add(Integer.toString(i)));
-			}
-			Thread.sleep(1000);
-			
-			Assertions.assertEquals(512, set.size());
-			
-			for (int i = 0; i < 512; i++) {
-				Assertions.assertTrue(set.contains(Integer.toString(i)));
-			}
-			
-			Assertions.assertEquals(set, set);
-			Assertions.assertEquals(set.hashCode(), set.hashCode());
-			set.clear();
-			Thread.sleep(1000);
-			Assertions.assertEquals(0, set.size());
-			Assertions.assertEquals(0, set.toArray().length);
-			Assertions.assertFalse(set.remove("non matching value"));
-			Assertions.assertFalse(set.remove(1));
-		}
-	}
-	
-	@SuppressWarnings("unlikely-arg-type")
-	@Test
-	void setCollectionSynchronousWriteBehindTest() throws Exception {
-		configurationMap.put(CollectionConfig.COLLECTION_NAME, "setCollectionSynchronousWriteBehindTest");
-		configurationMap.put(CollectionConfig.COLLECTION_WRITE_MODE, CollectionConfig.COLLECTION_WRITE_MODE_BEHIND);
+	void setCollectionSynchronousTest() throws Exception {
+		configurationMap.put(CollectionConfig.COLLECTION_NAME, "setCollectionSynchronousTest");
 		configurationMap.put(CollectionConfig.COLLECTION_SEND_MODE, CollectionConfig.COLLECTION_SEND_MODE_SYNCHRONOUS);
 		
 		try (KSet<String> set = new KafkaSet<String, String>(new CollectionConfig(configurationMap), CollectionSerde.stringToString())) {
@@ -159,9 +92,8 @@ public class SetCollectionTest {
 	
 	@SuppressWarnings("unlikely-arg-type")
 	@Test
-	void setCollectionAsynchronousWriteBehindTest() throws Exception {
-		configurationMap.put(CollectionConfig.COLLECTION_NAME, "setCollectionAsynchronousWriteBehindTest");
-		configurationMap.put(CollectionConfig.COLLECTION_WRITE_MODE, CollectionConfig.COLLECTION_WRITE_MODE_BEHIND);
+	void setCollectionAsynchronousTest() throws Exception {
+		configurationMap.put(CollectionConfig.COLLECTION_NAME, "setCollectionAsynchronousTest");
 		configurationMap.put(CollectionConfig.COLLECTION_SEND_MODE, CollectionConfig.COLLECTION_SEND_MODE_ASYNCHRONOUS);
 		
 		try (KSet<String> set = new KafkaSet<String, String>(new CollectionConfig(configurationMap), CollectionSerde.stringToString())) {
@@ -196,7 +128,6 @@ public class SetCollectionTest {
 	@Test
 	void hTreeSetTest() throws Exception {
 		configurationMap.put(CollectionConfig.COLLECTION_NAME, "hTreeSetTest");
-		configurationMap.put(CollectionConfig.COLLECTION_WRITE_MODE, CollectionConfig.COLLECTION_WRITE_MODE_AHEAD);
 		configurationMap.put(CollectionConfig.COLLECTION_SEND_MODE, CollectionConfig.COLLECTION_SEND_MODE_SYNCHRONOUS);
 		
 		DB db = DBMaker.memoryDB().make();
@@ -230,7 +161,6 @@ public class SetCollectionTest {
 	@Test
 	void setCollectionContainsAllTest() throws Exception {
 		configurationMap.put(CollectionConfig.COLLECTION_NAME, "setCollectionContainsAllTest");
-		configurationMap.put(CollectionConfig.COLLECTION_WRITE_MODE, CollectionConfig.COLLECTION_WRITE_MODE_BEHIND);
 		configurationMap.put(CollectionConfig.COLLECTION_SEND_MODE, CollectionConfig.COLLECTION_SEND_MODE_ASYNCHRONOUS);
 		
 		try (KSet<String> set = new KafkaSet<String, String>(new CollectionConfig(configurationMap), CollectionSerde.stringToString())) {
@@ -266,7 +196,6 @@ public class SetCollectionTest {
 	@Test
 	void setReadonlyTest() throws Exception {
 		configurationMap.put(CollectionConfig.COLLECTION_NAME, "setReadonlyTest");
-		configurationMap.put(CollectionConfig.COLLECTION_WRITE_MODE, CollectionConfig.COLLECTION_WRITE_MODE_BEHIND);
 		configurationMap.put(CollectionConfig.COLLECTION_SEND_MODE, CollectionConfig.COLLECTION_SEND_MODE_ASYNCHRONOUS);
 		
 		try (KSet<String> set1 = new KafkaSet<String, String>(new CollectionConfig(configurationMap), CollectionSerde.stringToString())) {
