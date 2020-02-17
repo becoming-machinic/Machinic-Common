@@ -14,6 +14,8 @@
 
 package com.becomingmachinic.kafka.collections;
 
+import java.util.ConcurrentModificationException;
+import java.util.Objects;
 import java.util.concurrent.ConcurrentMap;
 import java.util.function.Function;
 
@@ -34,14 +36,23 @@ public abstract class AbstractKafkaMap<K, V, KK, KV> extends AbstractKafkaCollec
 		super.start();
 	}
 	
+	protected void sendToKafka(K key, V value) {
+		{
+			super.sendKafkaEvent(this.keySerde.serialize(key),(value != null ? this.valueSerde.serialize(value) : null));
+			if (this.checkConcurrentModification && Objects.equals(this.delegateMap.get(key), value)) {
+				throw new ConcurrentModificationException(String.format("The value was modified by another thread/instance during update"));
+			}
+		}
+	}
+	
 	protected V updateCollectionLocal(K key, V value) {
 		if (value != null) {
 			V oldValue = this.delegateMap.put(key, value);
-			super.sendKafkaEvent(this.keySerde.serialize(key), this.valueSerde.serialize(value));
+			sendToKafka(key, value);
 			return oldValue;
 		} else {
 			V oldValue = this.delegateMap.remove(key);
-			super.sendKafkaEvent(this.keySerde.serialize(key), null);
+			sendToKafka(key, null);
 			return oldValue;
 		}
 	}
@@ -49,21 +60,21 @@ public abstract class AbstractKafkaMap<K, V, KK, KV> extends AbstractKafkaCollec
 	protected V putIfAbsentLocal(K key, V value) {
 		V oldValue = this.delegateMap.putIfAbsent(key, value);
 		if (oldValue == null) {
-			super.sendKafkaEvent(this.keySerde.serialize(key), this.valueSerde.serialize(value));
+			sendToKafka(key, value);
 		}
 		return oldValue;
 	}
 	
 	protected V computeIfAbsentLocal(K key, Function<? super K, ? extends V> mappingFunction) {
 		V oldOrNewValue = this.delegateMap.computeIfAbsent(key, mappingFunction);
-		super.sendKafkaEvent(this.keySerde.serialize(key), this.valueSerde.serialize(oldOrNewValue));
+		sendToKafka(key, oldOrNewValue);
 		return oldOrNewValue;
 	}
 	
 	protected boolean removeLocal(K key, V value) {
 		boolean changed = this.delegateMap.remove(key, value);
 		if (changed) {
-			super.sendKafkaEvent(this.keySerde.serialize(key), null);
+			sendToKafka(key, null);
 		}
 		return changed;
 	}
@@ -71,7 +82,7 @@ public abstract class AbstractKafkaMap<K, V, KK, KV> extends AbstractKafkaCollec
 	protected boolean replaceLocal(K key, V oldValue, V newValue) {
 		boolean changed = this.delegateMap.replace(key, oldValue, newValue);
 		if (changed) {
-			super.sendKafkaEvent(this.keySerde.serialize(key), this.valueSerde.serialize(newValue));
+			sendToKafka(key, newValue);
 		}
 		return changed;
 	}

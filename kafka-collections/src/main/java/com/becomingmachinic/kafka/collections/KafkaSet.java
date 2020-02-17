@@ -60,7 +60,7 @@ public class KafkaSet<KK, K> extends AbstractKafkaSet<KK, K> implements KSet<K> 
 	}
 	@Override
 	protected boolean containsLocal(K key) {
-		return false;
+		return this.delegateSet.contains(key);
 	}
 	
 	@Override

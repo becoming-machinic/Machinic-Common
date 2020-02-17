@@ -14,12 +14,11 @@
 
 package com.becomingmachinic.kafka.collections.extensions;
 
-import com.becomingmachinic.kafka.collections.CollectionStringSerde;
 import com.becomingmachinic.kafka.collections.SerializationException;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
-public class JacksonToStringCollectionSerde<T> implements CollectionStringSerde<T> {
+public class JacksonToStringCollectionSerde<T> implements CollectionJsonSerde<T> {
 	
 	protected final ObjectMapper objectMapper;
 	protected final Class<T> classOfT;

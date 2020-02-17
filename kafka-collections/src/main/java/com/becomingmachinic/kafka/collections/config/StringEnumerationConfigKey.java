@@ -14,6 +14,7 @@
 
 package com.becomingmachinic.kafka.collections.config;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
@@ -25,14 +26,17 @@ public class StringEnumerationConfigKey extends ConfigKey<String> {
 	
 	public StringEnumerationConfigKey(String name, String defaultValue, List<String> validValues) {
 		super(name, defaultValue);
-		this.validValues = validValues;
+		this.validValues = new ArrayList<>();
+		for(String value : validValues){
+			this.validValues.add(value.toLowerCase());
+		}
 	}
 	
 	@Override
 	public String getValue(Map<? extends Object, Object> providedProperties) throws KafkaCollectionConfigurationException {
 		String value = getAsString(providedProperties.get(this.name));
 		if (value != null) {
-			if (!this.validValues.contains(value)) {
+			if (!this.validValues.contains(value.toLowerCase())) {
 				throw new KafkaCollectionConfigurationException("Property %s has a value of %s which is not valid. Value should be one of %s", this.name, value, String.join(", ", validValues));
 			}
 		} else {

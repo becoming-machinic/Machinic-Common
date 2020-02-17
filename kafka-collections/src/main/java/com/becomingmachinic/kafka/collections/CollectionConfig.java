@@ -74,6 +74,10 @@ public class CollectionConfig {
 	 */
 	public static String COLLECTION_READ_OWN_WRITES = "collection.read.own.writes";
 	/**
+	 * When enabled the collection will check if the value has been updated between sending the value to kafka and receiving its own write. This setting only works when running in {@value CollectionConfig#COLLECTION_SEND_MODE_SYNCHRONOUS}.
+	 */
+	public static String COLLECTION_CHECK_CONCURRENT_MODIFICATION = "collection.check.concurrent.modification";
+	/**
 	 * Create the Kafka topic if it does not yet exist.
 	 */
 	public static String COLLECTION_CREATE_TOPIC = "collection.create.topic";
@@ -149,6 +153,8 @@ public class CollectionConfig {
 						Arrays.asList(COLLECTION_SEND_MODE_ASYNCHRONOUS, COLLECTION_SEND_MODE_SYNCHRONOUS)),
 				new BooleanConfigKey(COLLECTION_READ_OWN_WRITES,
 						Boolean.FALSE),
+				new BooleanConfigKey(COLLECTION_CHECK_CONCURRENT_MODIFICATION,
+						false),
 				new BooleanConfigKey(COLLECTION_SKIP_CONNECTIVITY_CHECK,
 						Boolean.FALSE),
 				new StringEnumerationConfigKey(COLLECTION_RESET_OFFSET,
@@ -190,6 +196,12 @@ public class CollectionConfig {
 		configurationMap.putIfAbsent(ConsumerConfig.AUTO_OFFSET_RESET_CONFIG, "earliest");
 		
 		this.configurationMap = new HashMap<>(configurationMap);
+		this.collectionConfigMap = CONFIG.getConfigMap(configurationMap);
+	}
+	
+	public CollectionConfig(CollectionConfig collectionConfig, Map<String, Object> overrideConfigurationMap) {
+		this.configurationMap = new HashMap<>(collectionConfig.configurationMap);
+		configurationMap.putAll(overrideConfigurationMap);
 		this.collectionConfigMap = CONFIG.getConfigMap(configurationMap);
 	}
 	
@@ -262,6 +274,10 @@ public class CollectionConfig {
 	 */
 	public boolean isReadOwnWrites() {
 		return (boolean) this.collectionConfigMap.get(COLLECTION_READ_OWN_WRITES);
+	}
+	
+	public boolean isCheckConcurrentModification() {
+		return (boolean) this.collectionConfigMap.get(COLLECTION_CHECK_CONCURRENT_MODIFICATION) && COLLECTION_SEND_MODE_SYNCHRONOUS.equals(this.getSendMode());
 	}
 	
 	/**

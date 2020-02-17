@@ -18,8 +18,6 @@ import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Disabled;
-import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.parallel.Execution;
 import org.testcontainers.containers.KafkaContainer;
@@ -229,32 +227,6 @@ public class BloomFilterCollectionTest {
 					bloomFilter2.addAll(Arrays.asList("key"));
 				});
 			}
-		}
-	}
-	
-	@Test
-	@Tag("performance")
-	@Disabled
-	void bloomFilterCollectionLargeDataTest() throws Exception {
-		configurationMap.put(CollectionConfig.COLLECTION_NAME, "bloomFilterCollectionLargeDataTest");
-		configurationMap.put(CollectionConfig.COLLECTION_SEND_MODE, CollectionConfig.COLLECTION_SEND_MODE_ASYNCHRONOUS);
-		configurationMap.put(ConsumerConfig.MAX_POLL_RECORDS_CONFIG, 5000);
-		
-		
-		try (KafkaBloomFilter<Integer> bloomFilter = new KafkaBloomFilter<>(new BloomFilterBitSetStore(10000000, 0.001d), new CollectionConfig(configurationMap), HashingSerializer.integerSerializer(), new HashStreamProviderMurmur3())) {
-			bloomFilter.awaitWarmupComplete(30, TimeUnit.SECONDS);
-			Assertions.assertEquals(0, bloomFilter.count());
-			
-			int falsePositiveCount = 0;
-			for (int i = 0; i < 10000000; i++) {
-				if (!bloomFilter.add(i)) {
-					falsePositiveCount++;
-				}
-			}
-			double falePositivePercent = falsePositiveCount / 10000000d;
-			Assertions.assertTrue(falePositivePercent <= 0.001d);
-			
-			Assertions.assertTrue(bloomFilter.getFalsePositiveProbability() <= bloomFilter.getExpectedFalsePositiveProbability());
 		}
 	}
 }

@@ -14,6 +14,8 @@
 
 package com.becomingmachinic.kafka.collections;
 
+import java.util.ConcurrentModificationException;
+
 public abstract class AbstractKafkaSet<KK, K> extends AbstractKafkaCollection<KK, String> {
 	
 	protected static final String VALUE = "1";
@@ -55,6 +57,9 @@ public abstract class AbstractKafkaSet<KK, K> extends AbstractKafkaCollection<KK
 			boolean added = this.addLocal(k);
 			if (added) {
 				super.sendKafkaEvent(this.keySerde.serialize(k), this.valueSerde.serialize(VALUE));
+				if (this.checkConcurrentModification && !this.containsLocal(k)) {
+					throw new ConcurrentModificationException(String.format("The value was modified by another thread/instance during update"));
+				}
 			}
 			return added;
 		}
@@ -66,6 +71,9 @@ public abstract class AbstractKafkaSet<KK, K> extends AbstractKafkaCollection<KK
 			boolean remove = this.removeLocal(k);
 			if (remove) {
 				super.sendKafkaEvent(this.keySerde.serialize(k), null);
+				if (this.checkConcurrentModification && this.containsLocal(k)) {
+					throw new ConcurrentModificationException(String.format("The value was modified by another thread/instance during update"));
+				}
 			}
 			return remove;
 		}

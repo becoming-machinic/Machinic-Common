@@ -138,7 +138,13 @@ public class CollectionConfigTest {
 		this.configurationMap.put(CollectionConfig.COLLECTION_READ_OWN_WRITES, true);
 		Assertions.assertEquals(true, new CollectionConfig(this.configurationMap).isReadOwnWrites());
 		
-		Assertions.assertEquals(false, new CollectionConfig(this.configurationMap).isSkipConnectivityCheck());
+		this.configurationMap.put(CollectionConfig.COLLECTION_SEND_MODE, CollectionConfig.COLLECTION_SEND_MODE_SYNCHRONOUS);
+		this.configurationMap.put(CollectionConfig.COLLECTION_CHECK_CONCURRENT_MODIFICATION, true);
+		Assertions.assertEquals(true, new CollectionConfig(this.configurationMap).isCheckConcurrentModification());
+		
+		this.configurationMap.put(CollectionConfig.COLLECTION_SEND_MODE, CollectionConfig.COLLECTION_SEND_MODE_ASYNCHRONOUS);
+		this.configurationMap.put(CollectionConfig.COLLECTION_CHECK_CONCURRENT_MODIFICATION, true);
+		Assertions.assertEquals(false, new CollectionConfig(this.configurationMap).isCheckConcurrentModification());
 		
 		this.configurationMap.put(CollectionConfig.COLLECTION_SKIP_CONNECTIVITY_CHECK, true);
 		Assertions.assertEquals(true, new CollectionConfig(this.configurationMap).isSkipConnectivityCheck());

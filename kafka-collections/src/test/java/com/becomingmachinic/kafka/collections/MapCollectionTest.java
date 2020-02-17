@@ -3,6 +3,7 @@ package com.becomingmachinic.kafka.collections;
 import static org.junit.jupiter.api.parallel.ExecutionMode.CONCURRENT;
 
 import java.time.Duration;
+import java.util.ConcurrentModificationException;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -23,8 +24,11 @@ import org.mapdb.HTreeMap;
 import org.mapdb.Serializer;
 import org.testcontainers.containers.KafkaContainer;
 
+import com.becomingmachinic.kafka.collections.extensions.GsonToStringCollectionSerde;
 import com.becomingmachinic.kafka.collections.utils.LogbackTestAppender;
 import com.becomingmachinic.kafka.collections.utils.RunnableTest;
+import com.becomingmachinic.kafka.collections.utils.TestJsonObject;
+import com.google.gson.GsonBuilder;
 
 import ch.qos.logback.classic.spi.ILoggingEvent;
 
@@ -414,5 +418,140 @@ public class MapCollectionTest {
 			
 			Assertions.assertEquals(512, map1.size());
 		}
+	}
+	
+	@Test
+	void mapJsonTest() throws Exception {
+		configurationMap.put(CollectionConfig.COLLECTION_NAME, "mapJsonTest");
+		configurationMap.put(CollectionConfig.COLLECTION_READ_OWN_WRITES, "true");
+		configurationMap.put(CollectionConfig.COLLECTION_SEND_MODE, CollectionConfig.COLLECTION_SEND_MODE_SYNCHRONOUS);
+		
+		try (KMap<String, TestJsonObject> map = new KafkaMap<String, TestJsonObject, String, String>(new CollectionConfig(configurationMap), CollectionSerde.stringToString(), new GsonToStringCollectionSerde<>(new GsonBuilder().create(), TestJsonObject.class))) {
+			map.awaitWarmupComplete(30, TimeUnit.SECONDS);
+			Assertions.assertEquals(0, map.size());
+			
+			for(int i = 0; i < 128;i++){
+				TestJsonObject testJsonObject = new TestJsonObject();
+				testJsonObject.setStringField(String.format("Test %s",i));
+				testJsonObject.setIntegerField(i);
+				testJsonObject.setLongField((long)i);
+				testJsonObject.setBooleanField(true);
+				
+				Assertions.assertNull(map.putIfAbsent(Integer.toString(i), testJsonObject));
+				Assertions.assertEquals(testJsonObject,map.putIfAbsent(Integer.toString(i), new TestJsonObject()));
+				Assertions.assertTrue(map.replace(Integer.toString(i),testJsonObject, new TestJsonObject()));
+				
+				String key = Integer.toString(i)+"A";
+				Assertions.assertEquals(key,map.computeIfAbsent(key, k -> new TestJsonObject(key)).getStringField());
+				Assertions.assertTrue(map.remove(key, new TestJsonObject(key)));
+			}
+			map.clear();
+		}
+	}
+	
+	
+	@Test
+	void concurrentModificationTest() throws Exception {
+		configurationMap.put(CollectionConfig.COLLECTION_NAME, "concurrentModificationTest");
+		
+		RunnableTest task1 = new RunnableTest() {
+			@Override
+			public void runTest() {
+				Map<String,Object> localConfigurationMap = new HashMap<>(configurationMap);
+				localConfigurationMap.put(CollectionConfig.COLLECTION_SEND_MODE, CollectionConfig.COLLECTION_SEND_MODE_SYNCHRONOUS);
+				localConfigurationMap.put(CollectionConfig.COLLECTION_CHECK_CONCURRENT_MODIFICATION, true);
+				
+				try (KMap<String, String> map = new KafkaMap<String, String, String, String>(new CollectionConfig(configurationMap), CollectionSerde.stringToString(), CollectionSerde.stringToString())) {
+					map.awaitWarmupComplete(30, TimeUnit.SECONDS);
+					
+					for (int i = 0; i < 1024; i++) {
+						map.put(String.format("Test_%s", i),Integer.toString(i));
+					}
+					
+					Thread.sleep(1000);
+				} catch (Exception e) {
+					Assertions.fail("Map threw exception", e);
+				}
+			}
+		};
+		RunnableTest task2 = new RunnableTest() {
+			@Override
+			public void runTest() {
+				Map<String,Object> localConfigurationMap = new HashMap<>(configurationMap);
+				localConfigurationMap.put(CollectionConfig.COLLECTION_SEND_MODE, CollectionConfig.COLLECTION_SEND_MODE_ASYNCHRONOUS);
+				localConfigurationMap.put(CollectionConfig.COLLECTION_CHECK_CONCURRENT_MODIFICATION, false);
+				
+				try (KMap<String, String> map = new KafkaMap<String, String, String, String>(new CollectionConfig(configurationMap), CollectionSerde.stringToString(), CollectionSerde.stringToString())) {
+					map.awaitWarmupComplete(30, TimeUnit.SECONDS);
+					
+					for (int i = 1025; i < 2048; i++) {
+						map.put(String.format("Test_%s", i),Integer.toString(i));
+					}
+					
+					Thread.sleep(1000);
+				} catch (Exception e) {
+					Assertions.fail("Map threw exception", e);
+				}
+			}
+		};
+		
+		task1.start();
+		task2.start();
+		
+		task1.get(30000);
+		task2.get(30000);
+	}
+	
+	@Test
+	void concurrentModificationExceptionTest() throws Exception {
+		configurationMap.put(CollectionConfig.COLLECTION_NAME, "concurrentModificationExceptionTest");
+
+		
+		RunnableTest task1 = new RunnableTest() {
+			@Override
+			public void runTest() {
+				Thread.currentThread().setName("concurrentModificationExceptionTest_task1");
+				Map<String,Object> localConfigurationMap = new HashMap<>(configurationMap);
+				localConfigurationMap.put(CollectionConfig.COLLECTION_SEND_MODE, CollectionConfig.COLLECTION_SEND_MODE_SYNCHRONOUS);
+				localConfigurationMap.put(CollectionConfig.COLLECTION_CHECK_CONCURRENT_MODIFICATION, true);
+				try (KMap<String, String> map = new KafkaMap<String, String, String, String>(new CollectionConfig(localConfigurationMap), CollectionSerde.stringToString(), CollectionSerde.stringToString())) {
+					map.awaitWarmupComplete(30, TimeUnit.SECONDS);
+					
+					for (int i = 0; i < 1024; i++) {
+						map.put("Test_1", Integer.toString(i));
+					}
+					
+					Assertions.fail("Map should have thrown a ConcurrentModificationException");
+				} catch (Exception e) {
+					Assertions.assertTrue(e instanceof ConcurrentModificationException);
+				}
+			}
+		};
+		RunnableTest task2 = new RunnableTest() {
+			@Override
+			public void runTest() {
+				Thread.currentThread().setName("concurrentModificationExceptionTest_task2");
+				Map<String,Object> localConfigurationMap = new HashMap<>(configurationMap);
+				localConfigurationMap.put(CollectionConfig.COLLECTION_SEND_MODE, CollectionConfig.COLLECTION_SEND_MODE_ASYNCHRONOUS);
+				localConfigurationMap.put(CollectionConfig.COLLECTION_CHECK_CONCURRENT_MODIFICATION, false);
+				
+				try (KMap<String, String> map = new KafkaMap<String, String, String, String>(new CollectionConfig(localConfigurationMap), CollectionSerde.stringToString(), CollectionSerde.stringToString())) {
+					map.awaitWarmupComplete(30, TimeUnit.SECONDS);
+					
+					while (task1.isAlive()){
+						map.put("Test_1", "B");
+						Thread.sleep(1);
+					}
+				} catch (Exception e) {
+					Assertions.fail("Map threw exception", e);
+				}
+			}
+		};
+		
+		task1.start();
+		task2.start();
+		
+		task1.get(30000);
+		task2.get(30000);
 	}
 }

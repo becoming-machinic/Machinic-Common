@@ -36,6 +36,7 @@ public abstract class AbstractKafkaCollection<K, V> implements AutoCloseable {
 	protected final long sendTimeout;
 	protected final boolean readOwnWrites;
 	protected final boolean readOnly;
+	protected final boolean checkConcurrentModification;
 	protected final ConcurrentSkipListSet<SendTask<K, V>> sendTasks = new ConcurrentSkipListSet<>();
 	protected final CopyOnWriteArrayList<KafkaCollectionEventListener<K, V>> listeners = new CopyOnWriteArrayList<>();
 	
@@ -54,6 +55,7 @@ public abstract class AbstractKafkaCollection<K, V> implements AutoCloseable {
 		this.sendTimeout = collectionConfig.getSendTimeoutMs();
 		this.readOwnWrites = collectionConfig.isReadOwnWrites();
 		this.readOnly = collectionConfig.isReadOnly();
+		this.checkConcurrentModification = collectionConfig.isCheckConcurrentModification();
 		collectionConfig.logConfig();
 		
 		checkConnectivity();

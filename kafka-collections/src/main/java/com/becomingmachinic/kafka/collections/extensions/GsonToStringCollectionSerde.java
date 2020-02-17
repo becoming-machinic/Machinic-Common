@@ -16,11 +16,10 @@ package com.becomingmachinic.kafka.collections.extensions;
 
 import java.lang.reflect.Type;
 
-import com.becomingmachinic.kafka.collections.CollectionStringSerde;
 import com.becomingmachinic.kafka.collections.SerializationException;
 import com.google.gson.Gson;
 
-public class GsonToStringCollectionSerde<T> implements CollectionStringSerde<T> {
+public class GsonToStringCollectionSerde<T> implements CollectionJsonSerde<T> {
 	
 	protected final Gson gson;
 	protected final Class<T> classOfT;
