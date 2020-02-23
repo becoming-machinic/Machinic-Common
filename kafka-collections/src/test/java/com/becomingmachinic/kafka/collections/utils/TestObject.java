@@ -27,10 +27,14 @@ public class TestObject {
 	
 	@Override
 	public boolean equals(Object obj) {
-		if (obj != null && obj instanceof TestObject) {
+		if (obj instanceof TestObject) {
 			TestObject other = (TestObject) obj;
 			return Objects.equals(field1, other.field1) && Objects.equals(field2, other.field2);
 		}
 		return false;
+	}
+	
+	public int hashCode() {
+		return Objects.hash(field1,field2);
 	}
 }
