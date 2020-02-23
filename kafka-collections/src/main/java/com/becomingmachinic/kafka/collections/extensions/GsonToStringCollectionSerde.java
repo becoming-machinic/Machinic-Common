@@ -16,6 +16,7 @@ package com.becomingmachinic.kafka.collections.extensions;
 
 import java.lang.reflect.Type;
 
+import com.becomingmachinic.kafka.collections.CollectionJsonSerde;
 import com.becomingmachinic.kafka.collections.SerializationException;
 import com.google.gson.Gson;
 

@@ -14,6 +14,7 @@
 
 package com.becomingmachinic.kafka.collections.extensions;
 
+import com.becomingmachinic.kafka.collections.CollectionJsonSerde;
 import com.becomingmachinic.kafka.collections.SerializationException;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
