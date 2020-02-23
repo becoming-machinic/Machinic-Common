@@ -1,4 +1,4 @@
-package com.becomingmachinic.kafka.streams.executor;
+package com.becomingmachinic.kafka.streams;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -6,6 +6,11 @@ import java.util.List;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.TimeUnit;
+
+import com.becomingmachinic.kafka.streams.executor.PartitionExecutor;
+import com.becomingmachinic.kafka.streams.executor.PartitionExecutorFactory;
+import com.becomingmachinic.kafka.streams.executor.PartitionId;
+import com.becomingmachinic.kafka.streams.executor.PartitionTask;
 
 public abstract class AbstractStreamSource {
 	
@@ -17,14 +22,15 @@ public abstract class AbstractStreamSource {
 	}
 	
 	/**
-	 * Offer task to the PartitionExecutor. If the partition is accepting tasks and the queue is not full it will be accepted.
-	 * If the PartitionExecutor for the passed PartitionId does not exist it will be created.
+	 * Offer task to the PartitionExecutor. If the partition is accepting tasks and the queue is not full it will be accepted. If the PartitionExecutor for the passed PartitionId does not exist it will be created.
 	 *
-	 * @param partitionId the identity of the partition
-	 * @param task        the task that will be offered to the PartitionExecutor
-	 * @return {@code true} if the element was added to task queue, else
-	 * {@code false}
-	 * @throws InterruptedException if interrupted while waiting
+	 * @param partitionId
+	 *          the identity of the partition
+	 * @param task
+	 *          the task that will be offered to the PartitionExecutor
+	 * @return {@code true} if the element was added to task queue, else {@code false}
+	 * @throws InterruptedException
+	 *           if interrupted while waiting
 	 */
 	protected boolean offer(PartitionId partitionId, PartitionTask task) {
 		PartitionExecutor partitionExecutor = this.partitionExecutorMap.computeIfAbsent(partitionId, k -> createPartitionExecutor(k));
@@ -36,24 +42,24 @@ public abstract class AbstractStreamSource {
 	 * @param task
 	 * @param timeout
 	 * @param unit
-	 * @return {@code true} if the element was added to task queue, else
-	 * {@code false}
-	 * @throws InterruptedException if interrupted while waiting
+	 * @return {@code true} if the element was added to task queue, else {@code false}
+	 * @throws InterruptedException
+	 *           if interrupted while waiting
 	 */
 	protected boolean offer(PartitionId partitionId, PartitionTask task, long timeout, TimeUnit unit) throws InterruptedException {
 		PartitionExecutor partitionExecutor = this.partitionExecutorMap.computeIfAbsent(partitionId, k -> createPartitionExecutor(k));
 		return partitionExecutor.offer(task, timeout, unit);
 	}
 	
-	protected void assignPartitions(Collection<PartitionId> partitionIds){
-		for(PartitionId partitionId : partitionIds){
+	protected void assignPartitions(Collection<PartitionId> partitionIds) {
+		for (PartitionId partitionId : partitionIds) {
 			this.partitionExecutorMap.computeIfAbsent(partitionId, k -> createPartitionExecutor(k));
 		}
 	}
 	
-	protected List<PartitionExecutor> revokePartitions(Collection<PartitionId> partitionIds){
+	protected List<PartitionExecutor> revokePartitions(Collection<PartitionId> partitionIds) {
 		List<PartitionExecutor> revokedPartitions = new ArrayList<>();
-		for(PartitionId partitionId : partitionIds){
+		for (PartitionId partitionId : partitionIds) {
 			PartitionExecutor partitionExecutor = this.partitionExecutorMap.remove(partitionId);
 			partitionExecutor.shutdown();
 			revokedPartitions.add(partitionExecutor);

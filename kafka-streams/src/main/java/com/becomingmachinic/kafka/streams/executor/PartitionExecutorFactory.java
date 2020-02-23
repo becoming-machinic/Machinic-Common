@@ -1,7 +1,5 @@
 package com.becomingmachinic.kafka.streams.executor;
 
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.TimeUnit;
 
 public class PartitionExecutorFactory {
@@ -10,8 +8,6 @@ public class PartitionExecutorFactory {
 	private final TimeUnit unit;
 	private final PartitionQueueFactory partitionQueueFactory;
 	private final PartitionThreadFactory threadFactory;
-	
-	private final ConcurrentMap<PartitionId, PartitionExecutor> partitionExecutorMap = new ConcurrentHashMap<>();
 	
 	public PartitionExecutorFactory(int threadsPerPartition, long threadKeepAliveTime, TimeUnit unit, PartitionQueueFactory partitionQueueFactory, PartitionThreadFactory threadFactory) {
 		this.threadsPerPartition = threadsPerPartition;

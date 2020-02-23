@@ -18,7 +18,7 @@ public class BoundedPartitionQueueFactory implements PartitionQueueFactory {
 	
 	@Override
 	public BlockingQueue<PartitionTask> create() {
-		if(this.queueSize > 1){
+		if (this.queueSize > 1) {
 			return new ArrayBlockingQueue<>(queueSize);
 		}
 		return new LinkedTransferQueue<PartitionTask>();

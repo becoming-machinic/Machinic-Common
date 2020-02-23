@@ -17,6 +17,7 @@
 
 	<modules>
 		<module>kafka-collections</module>
+		<module>kafka-streams</module>
 	</modules>
 
 	<properties>
