@@ -1,10 +1,10 @@
 package com.becomingmachinic.kafka.streams;
 
-public interface Callback<E extends StreamEvent> {
+public interface Callback<K,V> {
 	
-	public void onBefore(E streamEvent);
+	public void onBefore(StreamEvent<K,V> streamEvent);
 	
-	public void onCompletion(E streamEvent, Exception exception);
+	public void onCompletion(StreamEvent<K,V> streamEvent, Exception exception);
 	
-	public void onCancel(E streamEvent);
+	public void onCancel(StreamEvent<K,V> streamEvent);
 }

@@ -7,6 +7,7 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.locks.ReentrantLock;
 
+
 public class PartitionExecutor {
 	
 	private final ReentrantLock mainLock = new ReentrantLock();
@@ -14,14 +15,14 @@ public class PartitionExecutor {
 	private final HashSet<Worker> workers = new HashSet<>();
 	private final AtomicInteger workerCount = new AtomicInteger(0);
 	
-	private final PartitionId partitionId;
+	private final int partitionCode;
 	private final int threadCount;
 	private final long keepAliveNanos;
 	private final BlockingQueue<PartitionTask> partitionQueue;
 	private final PartitionThreadFactory threadFactory;
 	
-	public PartitionExecutor(PartitionId partitionId, int threadCount, long keepAliveTime, TimeUnit unit, PartitionQueueFactory partitionQueueFactory, PartitionThreadFactory threadFactory) {
-		this.partitionId = partitionId;
+	public PartitionExecutor(int partitionCode, int threadCount, long keepAliveTime, TimeUnit unit, PartitionQueueFactory partitionQueueFactory, PartitionThreadFactory threadFactory) {
+		this.partitionCode = partitionCode;
 		this.threadCount = threadCount;
 		this.keepAliveNanos = unit.toNanos(keepAliveTime);
 		this.partitionQueue = partitionQueueFactory.create();
@@ -192,7 +193,7 @@ public class PartitionExecutor {
 		private final PartitionThread thread;
 		
 		public Worker() {
-			thread = threadFactory.create(partitionId, this);
+			thread = threadFactory.create(partitionCode, this);
 			workerCount.incrementAndGet();
 			thread.start();
 		}
@@ -208,11 +209,11 @@ public class PartitionExecutor {
 						try {
 							threadLock.lock();
 							Thread.interrupted();
-							task.onBeforeExecute();
+							task.onBefore();
 							task.run();
-							task.onAfterExecute(null);
+							task.onCompletion(null);
 						} catch (Exception e) {
-							task.onAfterExecute(e);
+							task.onCompletion(e);
 							throw e;
 						} finally {
 							threadLock.unlock();
@@ -304,6 +305,13 @@ public class PartitionExecutor {
 		
 		public boolean awaitTermination(long timeout, TimeUnit unit) throws InterruptedException {
 			return this.statusLatch.await(timeout, unit);
+		}
+	}
+	
+	public static class StreamPartitionThreadFactory implements PartitionThreadFactory{
+		
+		@Override public PartitionThread create(int partitionCode, Runnable worker) {
+			return new PartitionThread(partitionCode,worker);
 		}
 	}
 }

@@ -17,7 +17,7 @@ public class PartitionExecutorFactory {
 		this.threadFactory = threadFactory;
 	}
 	
-	public PartitionExecutor create(PartitionId partitionId) {
-		return new PartitionExecutor(partitionId, threadsPerPartition, threadKeepAliveTime, unit, partitionQueueFactory, threadFactory);
+	public PartitionExecutor create(Integer partitionCode) {
+		return new PartitionExecutor(partitionCode, threadsPerPartition, threadKeepAliveTime, unit, partitionQueueFactory, threadFactory);
 	}
 }

@@ -11,6 +11,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import org.apache.kafka.clients.consumer.ConsumerRebalanceListener;
 import org.apache.kafka.clients.consumer.ConsumerRecord;
@@ -27,20 +28,20 @@ import com.becomingmachinic.kafka.streams.executor.PartitionId;
 public class KafkaStream<K, V> extends AbstractStream<K, V> {
 	private static final Logger logger = LoggerFactory.getLogger(KafkaStream.class);
 	
-	private final KafkaStreamRebalanceListener rebalanceListener;
+	private final KafkaStreamCommitMessageCallback commitMessageCallback;
 	private final KafkaStreamConsumerWorker kafkaStreamConsumerWorker;
 	
 	public KafkaStream(final StreamConfig streamConfig, final StreamFlow<K, V> streamFlow, Map<String, Object> consumerProperties, Deserializer<K> keyDeserializer,
 			Deserializer<V> valueDeserializer) {
 		super(streamConfig, streamFlow);
 		
-		this.rebalanceListener = new KafkaStreamRebalanceListener();
+		this.commitMessageCallback = new KafkaStreamCommitMessageCallback();
 		this.kafkaStreamConsumerWorker = new KafkaStreamConsumerWorker(keyDeserializer, valueDeserializer);
 	}
 	
 	class KafkaStreamConsumerWorker implements Runnable, AutoCloseable {
 		
-		private final Duration maxPollInterval;
+		private final long maxPollInterval;
 		private final long commitInterval;
 		
 		private final KafkaConsumer<K, V> consumer;
@@ -50,7 +51,7 @@ public class KafkaStream<K, V> extends AbstractStream<K, V> {
 		private long lastCommit = 0;
 		
 		public KafkaStreamConsumerWorker(final Deserializer<K> keyDeserializer, final Deserializer<V> valueDeserializer) {
-			this.maxPollInterval = Duration.ofMillis(streamConfig.getSourceConsumerMaxPollInterval());
+			this.maxPollInterval = streamConfig.getSourceConsumerMaxPollInterval();
 			this.commitInterval = streamConfig.getCommitInterval();
 			
 			this.consumer = new KafkaConsumer<>(streamConfig.getConsumerConfig(), keyDeserializer, valueDeserializer);
@@ -59,9 +60,9 @@ public class KafkaStream<K, V> extends AbstractStream<K, V> {
 		@Override
 		public void run() {
 			if (streamConfig.getSourceTopics() != null && !streamConfig.getSourceTopics().isEmpty()) {
-				this.consumer.subscribe(streamConfig.getSourceTopics(), rebalanceListener);
+				this.consumer.subscribe(streamConfig.getSourceTopics(), commitMessageCallback);
 			} else if (streamConfig.getSourceTopicPattern() != null) {
-				this.consumer.subscribe(streamConfig.getSourceTopicPattern(), rebalanceListener);
+				this.consumer.subscribe(streamConfig.getSourceTopicPattern(), commitMessageCallback);
 			} else {
 				// TODO different exception
 				throw new IllegalArgumentException("No source topic set");
@@ -70,17 +71,24 @@ public class KafkaStream<K, V> extends AbstractStream<K, V> {
 		}
 		
 		private void standardCommitStrategy() throws InterruptedException {
+			// Start polling at the minimum interval
+			long pollInterval = Math.min(this.maxPollInterval,this.commitInterval);
 			while (!stop) {
 				this.commit();
-				ConsumerRecords<K, V> consumerRecords = this.consumer.poll(this.maxPollInterval);
-				for (ConsumerRecord<K, V> consumerRecord : consumerRecords) {
-					while (!submit(new KafkaStreamRecord<>(consumerRecord), rebalanceListener, timeRemaining(),TimeUnit.MILLISECONDS)) {
-						if (System.currentTimeMillis() - lastCommit >= commitInterval) {
+				ConsumerRecords<K, V> consumerRecords = this.consumer.poll(Duration.ofMillis(pollInterval));
+				if (!consumerRecords.isEmpty()) {
+					for (ConsumerRecord<K, V> consumerRecord : consumerRecords) {
+						while (!submit(new KafkaStreamEvent<>(consumerRecord), commitMessageCallback, timeRemaining(), TimeUnit.MILLISECONDS)) {
 							this.commit();
 						}
 					}
+					pollInterval = Math.min(this.maxPollInterval,this.commitInterval);
+				} else {
+					// if no records are found and we don't have any commits waiting start backoff.
+					if(commitMessageCallback.getWaitingRecords() == 0) {
+						pollInterval = Math.min(pollInterval + pollInterval/2, this.maxPollInterval);
+					}
 				}
-				
 			}
 		}
 		
@@ -89,8 +97,8 @@ public class KafkaStream<K, V> extends AbstractStream<K, V> {
 		}
 		
 		private void commit() {
-			this.lastCommit = System.currentTimeMillis();
-			rebalanceListener.commitOffsets(this.consumer);
+			this.lastCommit = System.nanoTime();
+			commitMessageCallback.commitOffsets(this.consumer);
 		}
 		
 		@Override
@@ -106,15 +114,16 @@ public class KafkaStream<K, V> extends AbstractStream<K, V> {
 		}
 	}
 	
-	public class KafkaStreamRebalanceListener implements ConsumerRebalanceListener, Callback<KafkaStreamRecord<K, V>> {
+	public class KafkaStreamCommitMessageCallback implements ConsumerRebalanceListener, Callback<K, V> {
 		
-		private final ConcurrentMap<PartitionId, Long> commitMap = new ConcurrentHashMap<>();
+		private final ConcurrentMap<KafkaPartitionId, Long> commitMap = new ConcurrentHashMap<>();
+		private final AtomicInteger waitingRecords = new AtomicInteger(0);
 		
 		@Override
 		public void onPartitionsRevoked(Collection<TopicPartition> partitions) {
 			List<PartitionId> partitionIdList = new ArrayList<>();
 			for (TopicPartition topicPartition : partitions) {
-				partitionIdList.add(new PartitionId(topicPartition.topic(), topicPartition.partition()));
+				partitionIdList.add(new KafkaPartitionId(topicPartition.topic(), topicPartition.partition()));
 			}
 			assignPartitions(partitionIdList);
 		}
@@ -123,17 +132,25 @@ public class KafkaStream<K, V> extends AbstractStream<K, V> {
 		public void onPartitionsAssigned(Collection<TopicPartition> partitions) {
 			List<PartitionId> partitionIdList = new ArrayList<>();
 			for (TopicPartition topicPartition : partitions) {
-				partitionIdList.add(new PartitionId(topicPartition.topic(), topicPartition.partition()));
+				partitionIdList.add(new KafkaPartitionId(topicPartition.topic(), topicPartition.partition()));
 			}
 			revokePartitions(partitionIdList);
 		}
 		
-		boolean commitOffsets(KafkaConsumer<?, ?> kafkaConsumer) {
+		/**
+		 * This method should only ever be called by the consumer worker thread.
+		 *
+		 * @param kafkaConsumer
+		 * @return
+		 */
+		boolean commitOffsets(KafkaConsumer<K, V> kafkaConsumer) {
 			final Map<TopicPartition, OffsetAndMetadata> offsets = new HashMap<>();
+			
+			this.waitingRecords.set(0);
 			// Create a Iterator to EntrySet of HashMap
-			Iterator<PartitionId> it = commitMap.keySet().iterator();
+			Iterator<KafkaPartitionId> it = commitMap.keySet().iterator();
 			while (it.hasNext()) {
-				PartitionId partitionId = it.next();
+				KafkaPartitionId partitionId = it.next();
 				commitMap.computeIfPresent(partitionId, (k, v) -> {
 					if (k != null) {
 						offsets.put(new TopicPartition(partitionId.getTopic(), partitionId.getPartition()), new OffsetAndMetadata(v, ""));
@@ -149,21 +166,33 @@ public class KafkaStream<K, V> extends AbstractStream<K, V> {
 		}
 		
 		@Override
-		public void onBefore(KafkaStreamRecord<K, V> streamEvent) {
+		public void onBefore(StreamEvent<K, V> streamEvent) {
 		
 		}
 		@Override
-		public void onCompletion(KafkaStreamRecord<K, V> streamEvent, Exception exception) {
-			this.commitMap.compute(streamEvent.getPartitionId(), (k, v) -> {
-				if (v != null && streamEvent.getOffset() > v) {
-					return streamEvent.getOffset() + 1;
-				}
-				return v;
-			});
+		public void onCompletion(StreamEvent<K, V> streamEvent, Exception exception) {
+			if (exception != null) {
+				KafkaStreamEvent<K, V> kafkaStreamEvent = (KafkaStreamEvent) streamEvent;
+				this.commitMap.compute(kafkaStreamEvent.getPartitionId(), (k, v) -> {
+					if (v != null && kafkaStreamEvent.getOffset() > v) {
+						this.waitingRecords.incrementAndGet();
+						return kafkaStreamEvent.getOffset() + 1;
+					}
+					return v;
+				});
+			}
 		}
 		@Override
-		public void onCancel(KafkaStreamRecord<K, V> streamEvent) {
+		public void onCancel(StreamEvent streamEvent) {
 		
+		}
+		
+		/**
+		 * Get an estimate of the number of records waiting to be committed.
+		 * @return
+		 */
+		public int getWaitingRecords(){
+			return this.waitingRecords.get();
 		}
 	}
 }

@@ -32,4 +32,8 @@ public class StreamConfig {
 	public Pattern getSourceTopicPattern() {
 		return null;
 	}
+	public int getMaxPartitionCount(){
+		return 10;
+	}
+
 }

@@ -3,14 +3,13 @@ package com.becomingmachinic.kafka.streams;
 import java.util.concurrent.TimeUnit;
 
 import com.becomingmachinic.kafka.streams.executor.PartitionTask;
-import com.becomingmachinic.kafka.streams.executor.PartitionTaskFactory;
 
-public abstract class AbstractStream<K,V> extends AbstractStreamSource implements Stream<K,V>{
+public abstract class AbstractStream<K, V> extends AbstractStreamSource implements Stream<K, V> {
 	
 	private final StreamPartitionTaskFactory streamPartitionTaskFactory;
-	private final StreamFlow<K,V> streamFlow;
+	private final StreamFlow<K, V> streamFlow;
 	
-	protected AbstractStream(final StreamConfig streamConfig,final StreamFlow<K,V> streamFlow) {
+	protected AbstractStream(final StreamConfig streamConfig, final StreamFlow<K, V> streamFlow) {
 		super(streamConfig);
 		this.streamPartitionTaskFactory = streamConfig.getPartitionTaskFactory();
 		this.streamFlow = streamFlow;
@@ -18,27 +17,20 @@ public abstract class AbstractStream<K,V> extends AbstractStreamSource implement
 	
 	@Override
 	public boolean submit(StreamEvent<K, V> event, Callback callback) {
-		return this.offer(event.getPartitionId(),this.streamPartitionTaskFactory.create(streamFlow,event,callback));
+		return this.offer(event.getPartitionId(), this.streamPartitionTaskFactory.create(streamFlow, event, callback));
 	}
 	@Override
 	public boolean submit(StreamEvent<K, V> event, Callback callback, long timeout, TimeUnit unit) throws InterruptedException {
-		return this.offer(event.getPartitionId(),this.streamPartitionTaskFactory.create(streamFlow,event,callback),timeout,unit);
+		return this.offer(event.getPartitionId(), this.streamPartitionTaskFactory.create(streamFlow, event, callback), timeout, unit);
 	}
 	
-	public static class StreamPartitionTaskFactory<K,V> implements PartitionTaskFactory<K,V> {
-		@Override
-		public PartitionTask create(StreamFlow<K, V> streamFlow, StreamEvent streamEvent, Callback<K, V> callback) {
-			return new StreamPartitionTask<>(streamFlow,streamEvent,callback);
-		}
-	}
-	
-	public static class StreamPartitionTask<K,V> implements PartitionTask {
+	public static class StreamPartitionTask<K, V> implements PartitionTask {
 		
 		private final StreamFlow<K, V> streamFlow;
 		private final StreamEvent<K, V> event;
-		private final Callback<StreamEvent> callback;
+		private final Callback<K,V> callback;
 		
-		public StreamPartitionTask(StreamFlow<K, V> streamFlow, StreamEvent<K, V> event, Callback<StreamEvent> callback) {
+		public StreamPartitionTask(StreamFlow<K, V> streamFlow, StreamEvent<K, V> event, Callback<K,V> callback) {
 			this.streamFlow = streamFlow;
 			this.event = event;
 			this.callback = callback;

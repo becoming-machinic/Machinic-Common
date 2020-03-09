@@ -12,18 +12,22 @@ import com.becomingmachinic.kafka.streams.executor.PartitionExecutor;
 import com.becomingmachinic.kafka.streams.executor.PartitionExecutorFactory;
 import com.becomingmachinic.kafka.streams.executor.PartitionId;
 import com.becomingmachinic.kafka.streams.executor.PartitionTask;
+import com.becomingmachinic.kafka.streams.executor.PartitionTaskFactory;
 
 public abstract class AbstractStreamSource {
 	
 	protected final StreamConfig streamConfig;
 	protected final String name;
 	protected final String instanceId = UUID.randomUUID().toString();
+	protected final int maxPartitionCount;
 	private final PartitionExecutorFactory partitionExecutorFactory;
-	private final ConcurrentMap<PartitionId, PartitionExecutor> partitionExecutorMap = new ConcurrentHashMap<>();
+	private final ConcurrentMap<Integer, PartitionExecutor> partitionExecutorMap = new ConcurrentHashMap<>();
 	
 	protected AbstractStreamSource(final StreamConfig streamConfig) {
 		this.streamConfig = streamConfig;
 		this.name = streamConfig.getStreamName();
+		this.maxPartitionCount = streamConfig.getMaxPartitionCount();
+		
 		this.partitionExecutorFactory = streamConfig.getPartitionExecutorFactory();
 	}
 	
@@ -36,7 +40,7 @@ public abstract class AbstractStreamSource {
 	 * @throws InterruptedException if interrupted while waiting
 	 */
 	protected boolean offer(PartitionId partitionId, PartitionTask task) {
-		PartitionExecutor partitionExecutor = this.partitionExecutorMap.computeIfAbsent(partitionId, k -> createPartitionExecutor(k));
+		PartitionExecutor partitionExecutor = this.partitionExecutorMap.computeIfAbsent(partitionId.getPartitionCode(this.maxPartitionCount), k -> createPartitionExecutor(k));
 		return partitionExecutor.offer(task);
 	}
 	
@@ -49,20 +53,20 @@ public abstract class AbstractStreamSource {
 	 * @throws InterruptedException if interrupted while waiting
 	 */
 	protected boolean offer(PartitionId partitionId, PartitionTask task, long timeout, TimeUnit unit) throws InterruptedException {
-		PartitionExecutor partitionExecutor = this.partitionExecutorMap.computeIfAbsent(partitionId, k -> createPartitionExecutor(k));
+		PartitionExecutor partitionExecutor = this.partitionExecutorMap.computeIfAbsent(partitionId.getPartitionCode(this.maxPartitionCount), k -> createPartitionExecutor(k));
 		return partitionExecutor.offer(task, timeout, unit);
 	}
 	
 	protected void assignPartitions(Collection<PartitionId> partitionIds) {
 		for (PartitionId partitionId : partitionIds) {
-			this.partitionExecutorMap.computeIfAbsent(partitionId, k -> createPartitionExecutor(k));
+			this.partitionExecutorMap.computeIfAbsent(partitionId.getPartitionCode(this.maxPartitionCount), k -> createPartitionExecutor(k));
 		}
 	}
 	
 	protected List<PartitionExecutor> revokePartitions(Collection<PartitionId> partitionIds) {
 		List<PartitionExecutor> revokedPartitions = new ArrayList<>();
 		for (PartitionId partitionId : partitionIds) {
-			PartitionExecutor partitionExecutor = this.partitionExecutorMap.remove(partitionId);
+			PartitionExecutor partitionExecutor = this.partitionExecutorMap.remove(partitionId.getPartitionCode(this.maxPartitionCount));
 			partitionExecutor.shutdown();
 			revokedPartitions.add(partitionExecutor);
 		}
@@ -134,8 +138,15 @@ public abstract class AbstractStreamSource {
 		return true;
 	}
 	
-	private PartitionExecutor createPartitionExecutor(PartitionId partitionId) {
-		return partitionExecutorFactory.create(partitionId);
+	private PartitionExecutor createPartitionExecutor(Integer partitionCode) {
+		return partitionExecutorFactory.create(partitionCode);
+	}
+	
+	public static class StreamPartitionTaskFactory<K, V> implements PartitionTaskFactory<K, V> {
+		@Override
+		public PartitionTask create(StreamFlow<K, V> streamFlow, StreamEvent streamEvent, Callback<K, V> callback) {
+			return new AbstractStream.StreamPartitionTask<>(streamFlow, streamEvent, callback);
+		}
 	}
 	
 }
