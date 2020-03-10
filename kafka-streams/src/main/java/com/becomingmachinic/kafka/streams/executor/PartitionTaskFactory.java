@@ -5,5 +5,5 @@ import com.becomingmachinic.kafka.streams.StreamEvent;
 import com.becomingmachinic.kafka.streams.StreamFlow;
 
 public interface PartitionTaskFactory<K,V> {
-	public PartitionTask create(StreamFlow<K,V> streamFlow,StreamEvent streamEvent, Callback<K,V> callback);
+	public PartitionTask create(StreamFlow<K, V> streamFlow, StreamEvent<K, V> streamEvent, Callback<K, V> callback);
 }

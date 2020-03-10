@@ -4,8 +4,9 @@ import java.util.concurrent.TimeUnit;
 
 public interface Stream<K,V> {
 	
-	public boolean submit(StreamEvent<K,V> event, Callback callback);
-	public boolean submit(StreamEvent<K,V> event, Callback callback,long timeout,TimeUnit unit) throws InterruptedException;
+	public boolean submit(StreamEvent<K, V> event, Callback<K, V> callback);
+	
+	public boolean submit(StreamEvent<K, V> event, Callback<K, V> callback, long timeout, TimeUnit unit) throws InterruptedException;
 	
 	public void shutdown();
 	public void shutdownNow();

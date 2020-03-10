@@ -12,7 +12,6 @@ import com.becomingmachinic.kafka.streams.executor.PartitionExecutor;
 import com.becomingmachinic.kafka.streams.executor.PartitionExecutorFactory;
 import com.becomingmachinic.kafka.streams.executor.PartitionId;
 import com.becomingmachinic.kafka.streams.executor.PartitionTask;
-import com.becomingmachinic.kafka.streams.executor.PartitionTaskFactory;
 
 public abstract class AbstractStreamSource {
 	
@@ -142,11 +141,5 @@ public abstract class AbstractStreamSource {
 		return partitionExecutorFactory.create(partitionCode);
 	}
 	
-	public static class StreamPartitionTaskFactory<K, V> implements PartitionTaskFactory<K, V> {
-		@Override
-		public PartitionTask create(StreamFlow<K, V> streamFlow, StreamEvent streamEvent, Callback<K, V> callback) {
-			return new AbstractStream.StreamPartitionTask<>(streamFlow, streamEvent, callback);
-		}
-	}
 	
 }

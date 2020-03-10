@@ -67,7 +67,7 @@ public class KafkaStream<K, V> extends AbstractStream<K, V> {
 				// TODO different exception
 				throw new IllegalArgumentException("No source topic set");
 			}
-			
+			standardCommitStrategy();
 		}
 		
 		private void standardCommitStrategy() throws InterruptedException {
@@ -172,7 +172,7 @@ public class KafkaStream<K, V> extends AbstractStream<K, V> {
 		@Override
 		public void onCompletion(StreamEvent<K, V> streamEvent, Exception exception) {
 			if (exception != null) {
-				KafkaStreamEvent<K, V> kafkaStreamEvent = (KafkaStreamEvent) streamEvent;
+				KafkaStreamEvent<K, V> kafkaStreamEvent = (KafkaStreamEvent<K, V>) streamEvent;
 				this.commitMap.compute(kafkaStreamEvent.getPartitionId(), (k, v) -> {
 					if (v != null && kafkaStreamEvent.getOffset() > v) {
 						this.waitingRecords.incrementAndGet();
@@ -183,7 +183,7 @@ public class KafkaStream<K, V> extends AbstractStream<K, V> {
 			}
 		}
 		@Override
-		public void onCancel(StreamEvent streamEvent) {
+		public void onCancel(StreamEvent<K, V> streamEvent) {
 		
 		}
 		
